@@ -198,9 +198,9 @@ Access Control
 [] The application is ready for user testing and potential deployment
 
 ## c. Technology Stack and Rationale
-- Frontend: React – why?
-- Backend: Node.js – why?
-- Database: MongoDB – why?
+- Frontend: React – I did some research and discovered React is very commonly used in today's websites. I wanted modern.
+- Backend: Node.js – I chose to work in JavaScript, front and backend.
+- Database: MongoDB – Again, I wanted to use modern and commonly used services.
 
 ## d. Testing Methods
 - Black Box: ...
