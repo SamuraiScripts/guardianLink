@@ -1,4 +1,6 @@
 const express = require('express');
+const requireAuth = require('../middleware/authMiddleware');
+const requireRole = require('../middleware/roleMiddleware');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -38,8 +40,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /auth/users — List all users (for cleanup/testing only)
-router.get('/users', async (req, res) => {
+// GET /auth/users — Admin only list
+router.get('/users', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -49,15 +51,15 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// DELETE /auth/users/:id — Delete user by ID
-router.delete('/users/:id', async (req, res) => {
+// DELETE /auth/users/:id — Admin only delete user
+router.delete('/users/:id', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const deleted = await User.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'User not found' });
     res.json({ message: 'User deleted', deleted });
   } catch (err) {
     console.error('Error deleting user:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error deleting user' });
   }
 });
 

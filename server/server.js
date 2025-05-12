@@ -19,8 +19,8 @@ const authRoutes = require('./routes/auth');
 const mongoURI = process.env.MONGODB_URI;
 
 mongoose.connect(mongoURI)
-  .then(() => console.log('✅ Connected to MongoDB Atlas'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+  .then(() => console.log('Connected to MongoDB Atlas'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 // Middleware
 app.use(cors());

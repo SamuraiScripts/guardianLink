@@ -1,4 +1,6 @@
 const express = require('express');
+const requireAuth = require('../middleware/authMiddleware');
+const requireRole = require('../middleware/roleMiddleware');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const Volunteer = require('../models/Volunteer');
@@ -62,8 +64,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET
-router.get('/', async (req, res) => {
+// GET (only NGOs and Admins can access this)
+router.get('/', requireAuth, requireRole('ngo', 'admin'), async (req, res) => {
   try {
     const { minHours, expertise } = req.query;
 
