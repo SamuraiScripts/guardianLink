@@ -53,7 +53,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET (only Volunteers and Admins can access this)
+// GET /ngos - Displays list of NGOs in database (only Volunteers and Admins can access this, for their respective dashboards)
 router.get('/', requireAuth, requireRole('volunteer', 'admin'), async (req, res) => {
   try {
     const { concern } = req.query;
@@ -69,15 +69,51 @@ router.get('/', requireAuth, requireRole('volunteer', 'admin'), async (req, res)
   }
 });
 
-// DELETE /ngos/:id — Delete NGO profile by ID
-router.delete('/:id', async (req, res) => {
+// PATCH /ngos/me — Edit own NGO Profile
+router.patch('/me', requireAuth, requireRole('ngo'), async (req, res) => {
+  const { organizationName, email, areasOfConcern } = req.body;
+
   try {
-    const deleted = await NGO.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: 'NGO not found' });
-    res.json({ message: 'NGO deleted', deleted });
+    const ngo = await NGO.findById(req.user.refId);
+    if (!ngo) return res.status(404).json({ error: 'NGO profile not found' });
+
+    if (organizationName) ngo.organizationName = organizationName;
+    if (areasOfConcern) ngo.areasOfConcern = areasOfConcern;
+    await ngo.save();
+
+    if (email) {
+      await User.findByIdAndUpdate(
+        req.user.userId,
+        { email: email.toLowerCase().trim() },
+        { new: true }
+      );
+    }
+
+    const updatedUser = await User.findById(req.user.userId);
+    res.json({
+    organizationName: ngo.organizationName,
+    areasOfConcern: ngo.areasOfConcern,
+    email: updatedUser.email
+});
   } catch (err) {
-    console.error('Error deleting NGO:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error updating NGO profile:', err);
+    res.status(500).json({ error: 'Server error updating profile' });
+  }
+});
+
+// DELETE /ngos/me — Delete own NGO Account
+router.delete('/me', requireAuth, requireRole('ngo'), async (req, res) => {
+  try {
+    // Delete profile
+    await NGO.findByIdAndDelete(req.user.refId);
+
+    // Delete linked user account
+    await User.findByIdAndDelete(req.user.userId);
+
+    res.json({ message: 'NGO account and user deleted' });
+  } catch (err) {
+    console.error('Error deleting NGO account:', err);
+    res.status(500).json({ error: 'Server error deleting account' });
   }
 });
 

@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 
 // App setup
 const app = express();
+const path = require('path');
 const PORT = process.env.PORT || 5050;
 
 // Routes
@@ -30,6 +31,7 @@ app.use('/auth', authRoutes);
 
 // Routes
 app.use('/volunteers', volunteerRoutes);
+app.use('/uploads/resumes', express.static(path.join(__dirname, 'uploads/resumes')));
 
 // Root route for sanity check
 app.get('/', (req, res) => {

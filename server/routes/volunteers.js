@@ -5,52 +5,99 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const Volunteer = require('../models/Volunteer');
 const User = require('../models/User');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+
+// Configure Multer storage for resumes
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../uploads/resumes'));
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: function (req, file, cb) {
+    const allowed = ['.pdf', '.doc', '.docx'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) cb(null, true);
+    else cb(new Error('Only PDF or Word documents allowed'));
+  }
+});
 
 // POST /volunteers — Register Volunteer + User
-router.post('/', async (req, res) => {
+router.post('/', upload.single('resume'), async (req, res) => {
   const {
     fullName,
     email,
     password,
     weeklyAvailability,
-    resumeUrl,
     backgroundCheck,
     areasOfExpertise
   } = req.body;
 
-  // Validate required fields
-  if (!fullName || !email || !password || !weeklyAvailability) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  const resumeUrl = req.file ? `/uploads/resumes/${req.file.filename}` : null;
+
+  // Validate required fields + attestation checkbox
+  if (
+  !fullName ||
+  !email ||
+  !password ||
+  !weeklyAvailability ||
+  !resumeUrl ||
+  !areasOfExpertise ||
+  backgroundCheck !== 'true'
+  ) {
+  // Delete orphaned resume if it was uploaded but the request is invalid
+  if (req.file) {
+    fs.unlink(path.join(__dirname, '../uploads/resumes', req.file.filename), (err) => {
+      if (err) console.error('Failed to delete orphaned resume:', err);
+    });
+  }
+
+  return res.status(400).json({ error: 'Missing required fields or background check not passed' });
   }
 
   try {
-    // Check if email is already used
+    // Ensure email is unique
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ error: 'Email already in use' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create Volunteer profile
+    // Create volunteer profile
     const volunteer = new Volunteer({
       fullName,
       email,
       weeklyAvailability,
       resumeUrl,
-      backgroundCheck,
-      areasOfExpertise
+      backgroundCheck: true, // we validated it's 'true'
+      areasOfExpertise: Array.isArray(areasOfExpertise)
+        ? areasOfExpertise
+        : areasOfExpertise
+        ? [areasOfExpertise]
+        : []
     });
+
     const savedVolunteer = await volunteer.save();
 
-    // Create User
+    // Create user for login
     const user = new User({
       email,
       password: hashedPassword,
       role: 'volunteer',
       refId: savedVolunteer._id
     });
+
     const savedUser = await user.save();
 
     res.status(201).json({
@@ -64,7 +111,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET (only NGOs and Admins can access this)
+// GET /volunteers - Displays list of Volunteers in database (only NGOs and Admins can access this, for their respective dashboards)
 router.get('/', requireAuth, requireRole('ngo', 'admin'), async (req, res) => {
   try {
     const { minHours, expertise } = req.query;
@@ -81,15 +128,93 @@ router.get('/', requireAuth, requireRole('ngo', 'admin'), async (req, res) => {
   }
 });
 
-// DELETE /volunteers/:id — Delete volunteer profile by ID
-router.delete('/:id', async (req, res) => {
+// PATCH /volunteers/me - Edit own Volunteer profile
+router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume'), async (req, res) => {
+    const {
+      fullName,
+      email,
+      weeklyAvailability,
+      areasOfExpertise
+    } = req.body;
+
+    try {
+      const volunteer = await Volunteer.findById(req.user.refId);
+      if (!volunteer) return res.status(404).json({ error: 'Volunteer profile not found' });
+
+      // Update editable fields
+      if (fullName) volunteer.fullName = fullName;
+      if (weeklyAvailability !== undefined) volunteer.weeklyAvailability = weeklyAvailability;
+      if (areasOfExpertise) {
+        volunteer.areasOfExpertise = Array.isArray(areasOfExpertise)
+          ? areasOfExpertise
+          : [areasOfExpertise];
+      }
+
+      // Replace resume if a new one was uploaded
+      if (req.file) {
+        // Delete old file
+        if (volunteer.resumeUrl) {
+          const oldPath = path.join(__dirname, '../', volunteer.resumeUrl);
+          fs.unlink(oldPath, (err) => {
+            if (err) console.error('Failed to delete old resume:', err);
+          });
+        }
+
+        // Save new path
+        volunteer.resumeUrl = `/uploads/resumes/${req.file.filename}`;
+      }
+
+      await volunteer.save();
+
+      // Update user email if needed
+      if (email) {
+        await User.findByIdAndUpdate(
+          req.user.userId,
+          { email: email.toLowerCase().trim() },
+          { new: true }
+        );
+      }
+
+      const updatedUser = await User.findById(req.user.userId);
+
+      res.json({
+        fullName: volunteer.fullName,
+        weeklyAvailability: volunteer.weeklyAvailability,
+        areasOfExpertise: volunteer.areasOfExpertise,
+        resumeUrl: volunteer.resumeUrl,
+        email: updatedUser.email
+      });
+    } catch (err) {
+      console.error('Error updating volunteer profile:', err);
+      res.status(500).json({ error: 'Server error updating profile' });
+    }
+  }
+);
+
+// DELETE /volunteers/me - Delete own Volunteer profile
+router.delete('/me', requireAuth, requireRole('volunteer'), async (req, res) => {
   try {
-    const deleted = await Volunteer.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: 'Volunteer not found' });
-    res.json({ message: 'Volunteer deleted', deleted });
+    const volunteer = await Volunteer.findById(req.user.refId);
+    if (!volunteer) return res.status(404).json({ error: 'Volunteer profile not found' });
+
+    // Delete resume file if it exists
+    if (volunteer.resumeUrl) {
+      const filePath = path.join(__dirname, '../', volunteer.resumeUrl);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error('Failed to delete resume file:', err);
+      });
+    }
+
+    // Delete Volunteer profile
+    await Volunteer.findByIdAndDelete(req.user.refId);
+
+    // Delete associated User account
+    await User.findByIdAndDelete(req.user.userId);
+
+    res.json({ message: 'Volunteer account and profile deleted successfully' });
   } catch (err) {
-    console.error('Error deleting volunteer:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error deleting volunteer account:', err);
+    res.status(500).json({ error: 'Server error deleting account' });
   }
 });
 

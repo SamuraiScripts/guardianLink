@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /auth/users — Admin only list
+// GET /auth/users — Admin only list of all users
 router.get('/users', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const users = await User.find();
