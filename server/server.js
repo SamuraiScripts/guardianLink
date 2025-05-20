@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 5050;
 const volunteerRoutes = require('./routes/volunteers');
 const ngoRoutes = require('./routes/ngos');
 const authRoutes = require('./routes/auth');
+const messageRoutes = require('./routes/messages');
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI;
@@ -28,6 +29,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/ngos', ngoRoutes);
 app.use('/auth', authRoutes);
+app.use('/messages', messageRoutes);
 
 // Routes
 app.use('/volunteers', volunteerRoutes);
