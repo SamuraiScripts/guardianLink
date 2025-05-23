@@ -5,6 +5,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const NGO = require('../models/NGO');
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // POST /ngos — Register NGO + User
 router.post('/', async (req, res) => {
@@ -27,6 +29,7 @@ router.post('/', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create NGO profile
     const ngo = new NGO({
       organizationName,
       email,
@@ -34,6 +37,7 @@ router.post('/', async (req, res) => {
     });
     const savedNGO = await ngo.save();
 
+    // Create associated user
     const user = new User({
       email,
       password: hashedPassword,
@@ -42,10 +46,17 @@ router.post('/', async (req, res) => {
     });
     const savedUser = await user.save();
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: savedUser._id, role: savedUser.role, refId: savedUser.refId },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+
+    // Return token to frontend
     res.status(201).json({
       message: 'NGO registered successfully',
-      userId: savedUser._id,
-      ngoId: savedNGO._id
+      token
     });
   } catch (err) {
     console.error('Error registering NGO:', err);
@@ -69,32 +80,49 @@ router.get('/', requireAuth, requireRole('volunteer', 'admin'), async (req, res)
   }
 });
 
+// GET /ngos/me — Get current NGO profile
+router.get('/me', requireAuth, requireRole('ngo'), async (req, res) => {
+  try {
+    const ngo = await NGO.findById(req.user.refId);
+    if (!ngo) return res.status(404).json({ error: 'NGO profile not found' });
+    res.json(ngo);
+  } catch (err) {
+    console.error('Error fetching NGO profile:', err);
+    res.status(500).json({ error: 'Server error fetching NGO profile' });
+  }
+});
+
 // PATCH /ngos/me — Edit own NGO Profile
 router.patch('/me', requireAuth, requireRole('ngo'), async (req, res) => {
   const { organizationName, email, areasOfConcern } = req.body;
 
   try {
-    const ngo = await NGO.findById(req.user.refId);
-    if (!ngo) return res.status(404).json({ error: 'NGO profile not found' });
+    let ngo;
 
-    if (organizationName) ngo.organizationName = organizationName;
-    if (areasOfConcern) ngo.areasOfConcern = areasOfConcern;
-    await ngo.save();
+    if (req.user.refId) {
+      // Edit existing profile
+      ngo = await NGO.findById(req.user.refId);
+      if (!ngo) return res.status(404).json({ error: 'NGO profile not found' });
 
-    if (email) {
-      await User.findByIdAndUpdate(
-        req.user.userId,
-        { email: email.toLowerCase().trim() },
-        { new: true }
-      );
+      if (organizationName) ngo.organizationName = organizationName;
+      if (areasOfConcern) ngo.areasOfConcern = areasOfConcern;
+      await ngo.save();
+    } else {
+      // Create new profile + link to User
+      ngo = new NGO({ organizationName, email, areasOfConcern });
+      await ngo.save();
+
+      await User.findByIdAndUpdate(req.user.userId, { refId: ngo._id });
     }
 
-    const updatedUser = await User.findById(req.user.userId);
-    res.json({
-    organizationName: ngo.organizationName,
-    areasOfConcern: ngo.areasOfConcern,
-    email: updatedUser.email
-});
+    // Always update user email
+    if (email) {
+      await User.findByIdAndUpdate(req.user.userId, {
+        email: email.toLowerCase().trim()
+      });
+    }
+
+    res.json({ message: 'NGO profile updated', ngo });
   } catch (err) {
     console.error('Error updating NGO profile:', err);
     res.status(500).json({ error: 'Server error updating profile' });

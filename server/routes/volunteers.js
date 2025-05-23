@@ -128,68 +128,75 @@ router.get('/', requireAuth, requireRole('ngo', 'admin'), async (req, res) => {
   }
 });
 
+// GET /volunteers/me — Get current Volunteer profile
+router.get('/me', requireAuth, requireRole('volunteer'), async (req, res) => {
+  try {
+    const volunteer = await Volunteer.findById(req.user.refId);
+    if (!volunteer) return res.status(404).json({ error: 'Volunteer profile not found' });
+    res.json(volunteer);
+  } catch (err) {
+    console.error('Error fetching Volunteer profile:', err);
+    res.status(500).json({ error: 'Server error fetching Volunteer profile' });
+  }
+});
+
 // PATCH /volunteers/me - Edit own Volunteer profile
 router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume'), async (req, res) => {
-    const {
-      fullName,
-      email,
-      weeklyAvailability,
-      areasOfExpertise
-    } = req.body;
+  const {
+    fullName,
+    email,
+    weeklyAvailability,
+    areasOfExpertise
+  } = req.body;
 
-    try {
-      const volunteer = await Volunteer.findById(req.user.refId);
+  const resumeUrl = req.file ? `/uploads/resumes/${req.file.filename}` : null;
+
+  try {
+    let volunteer;
+
+    if (req.user.refId) {
+      // Edit existing profile
+      volunteer = await Volunteer.findById(req.user.refId);
       if (!volunteer) return res.status(404).json({ error: 'Volunteer profile not found' });
 
-      // Update editable fields
       if (fullName) volunteer.fullName = fullName;
-      if (weeklyAvailability !== undefined) volunteer.weeklyAvailability = weeklyAvailability;
-      if (areasOfExpertise) {
-        volunteer.areasOfExpertise = Array.isArray(areasOfExpertise)
-          ? areasOfExpertise
-          : [areasOfExpertise];
-      }
-
-      // Replace resume if a new one was uploaded
-      if (req.file) {
-        // Delete old file
-        if (volunteer.resumeUrl) {
-          const oldPath = path.join(__dirname, '../', volunteer.resumeUrl);
-          fs.unlink(oldPath, (err) => {
-            if (err) console.error('Failed to delete old resume:', err);
-          });
-        }
-
-        // Save new path
-        volunteer.resumeUrl = `/uploads/resumes/${req.file.filename}`;
-      }
+      if (weeklyAvailability) volunteer.weeklyAvailability = weeklyAvailability;
+      if (areasOfExpertise) volunteer.areasOfExpertise = Array.isArray(areasOfExpertise)
+        ? areasOfExpertise
+        : [areasOfExpertise];
+      if (resumeUrl) volunteer.resumeUrl = resumeUrl;
 
       await volunteer.save();
-
-      // Update user email if needed
-      if (email) {
-        await User.findByIdAndUpdate(
-          req.user.userId,
-          { email: email.toLowerCase().trim() },
-          { new: true }
-        );
-      }
-
-      const updatedUser = await User.findById(req.user.userId);
-
-      res.json({
-        fullName: volunteer.fullName,
-        weeklyAvailability: volunteer.weeklyAvailability,
-        areasOfExpertise: volunteer.areasOfExpertise,
-        resumeUrl: volunteer.resumeUrl,
-        email: updatedUser.email
+    } else {
+      // Create new profile + link to User
+      volunteer = new Volunteer({
+        fullName,
+        email,
+        weeklyAvailability,
+        backgroundCheck: true, // assumed already passed if profile being edited
+        areasOfExpertise: Array.isArray(areasOfExpertise)
+          ? areasOfExpertise
+          : [areasOfExpertise],
+        resumeUrl
       });
-    } catch (err) {
-      console.error('Error updating volunteer profile:', err);
-      res.status(500).json({ error: 'Server error updating profile' });
+      await volunteer.save();
+
+      await User.findByIdAndUpdate(req.user.userId, { refId: volunteer._id });
     }
+
+    // Always update user email
+    if (email) {
+      await User.findByIdAndUpdate(req.user.userId, {
+        email: email.toLowerCase().trim()
+      });
+    }
+
+    res.json({ message: 'Volunteer profile updated', volunteer });
+  } catch (err) {
+    console.error('Error updating Volunteer profile:', err);
+    res.status(500).json({ error: 'Server error updating profile' });
   }
-);
+});
 
 // DELETE /volunteers/me - Delete own Volunteer profile
 router.delete('/me', requireAuth, requireRole('volunteer'), async (req, res) => {

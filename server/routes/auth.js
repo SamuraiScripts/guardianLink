@@ -5,7 +5,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+const NGO = require('../models/NGO');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // POST /auth/login — Authenticate user and return token
@@ -48,6 +48,18 @@ router.get('/users', requireAuth, requireRole('admin'), async (req, res) => {
   } catch (err) {
     console.error('Error fetching users:', err);
     res.status(500).json({ error: 'Server error fetching users' });
+  }
+});
+
+// GET /auth/me — Get current user's account info (for Admins)
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    console.error('Error fetching user info:', err);
+    res.status(500).json({ error: 'Server error fetching user info' });
   }
 });
 
@@ -96,9 +108,20 @@ router.post('/users', requireAuth, requireRole('admin'), async (req, res) => {
 // DELETE /auth/users/:id — Admin deletes user
 router.delete('/users/:id', requireAuth, requireRole('admin'), async (req, res) => {
   try {
-    const deleted = await User.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: 'User not found' });
-    res.json({ message: 'User deleted', deleted });
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Delete linked profile if it exists
+    if (user.role === 'volunteer' && user.refId) {
+      await Volunteer.findByIdAndDelete(user.refId);
+    } else if (user.role === 'ngo' && user.refId) {
+      await NGO.findByIdAndDelete(user.refId);
+    }
+
+    // Then delete the user
+    await user.deleteOne();
+
+    res.json({ message: 'User and linked profile deleted', user });
   } catch (err) {
     console.error('Error deleting user:', err);
     res.status(500).json({ error: 'Server error deleting user' });
