@@ -69,8 +69,29 @@ router.get('/', requireAuth, requireRole('volunteer', 'admin'), async (req, res)
   try {
     const { concern } = req.query;
 
-    const filters = {};
-    if (concern) filters.areasOfConcern = { $in: [concern] };
+    // Find all User documents with role 'ngo' that have a refId
+    const ngoUsers = await User.find({ role: 'ngo', refId: { $ne: null } }).select('refId');
+    const linkedNgoProfileIds = ngoUsers.map(user => user.refId);
+
+    if (linkedNgoProfileIds.length === 0) {
+      return res.json([]); // No linked NGO profiles found
+    }
+
+    const filters = {
+      _id: { $in: linkedNgoProfileIds } // Only fetch NGOs linked to a user
+    };
+    if (concern) {
+      // Ensure concern is treated as a regex for broader matching if it's a single string,
+      // or handle array of concerns if your model/query supports it.
+      // For simplicity, assuming 'concern' is a string to be matched within the array.
+      // If 'areasOfConcern' is an array of strings, and you want to match any part,
+      // you might need a regex or ensure the query parameter is processed accordingly.
+      // The $in operator expects an array of exact matches or regex objects.
+      // If 'concern' is a single string, we might want to match if it's one of the concerns.
+      // If 'concern' is intended to be a substring search across all concerns, a $regex might be better.
+      // For now, sticking to the original $in logic but it might need refinement based on exact matching needs.
+      filters.areasOfConcern = { $in: Array.isArray(concern) ? concern : [concern] };
+    }
 
     const ngos = await NGO.find(filters);
     res.json(ngos);
@@ -98,6 +119,7 @@ router.patch('/me', requireAuth, requireRole('ngo'), async (req, res) => {
 
   try {
     let ngo;
+    let isNewProfile = false;
 
     if (req.user.refId) {
       // Edit existing profile
@@ -105,26 +127,55 @@ router.patch('/me', requireAuth, requireRole('ngo'), async (req, res) => {
       if (!ngo) return res.status(404).json({ error: 'NGO profile not found' });
 
       if (organizationName) ngo.organizationName = organizationName;
-      if (areasOfConcern) ngo.areasOfConcern = areasOfConcern;
+      if (email) ngo.email = email;
+      if (areasOfConcern) {
+         ngo.areasOfConcern = Array.isArray(areasOfConcern) 
+            ? areasOfConcern 
+            : typeof areasOfConcern === 'string' 
+              ? areasOfConcern.split(',').map(s => s.trim()).filter(s => s) 
+              : [];
+      }
       await ngo.save();
     } else {
       // Create new profile + link to User
-      ngo = new NGO({ organizationName, email, areasOfConcern });
+      isNewProfile = true;
+      if (!organizationName || !email) {
+        return res.status(400).json({ error: 'Organization name and contact email are required for new NGO profile.' });
+      }
+      ngo = new NGO({ 
+        organizationName, 
+        email,
+        areasOfConcern: Array.isArray(areasOfConcern) 
+            ? areasOfConcern 
+            : typeof areasOfConcern === 'string' 
+              ? areasOfConcern.split(',').map(s => s.trim()).filter(s => s) 
+              : [] 
+      });
       await ngo.save();
-
       await User.findByIdAndUpdate(req.user.userId, { refId: ngo._id });
     }
 
-    // Always update user email
-    if (email) {
-      await User.findByIdAndUpdate(req.user.userId, {
-        email: email.toLowerCase().trim()
+    if (isNewProfile) {
+      const updatedUser = await User.findById(req.user.userId);
+      const newToken = jwt.sign(
+        { userId: updatedUser._id, role: updatedUser.role, refId: updatedUser.refId, email: updatedUser.email },
+        JWT_SECRET,
+        { expiresIn: '2h' }
+      );
+      return res.json({ 
+        message: 'NGO profile created and updated successfully', 
+        ngo, 
+        token: newToken 
       });
+    } else {
+      return res.json({ message: 'NGO profile updated', ngo });
     }
 
-    res.json({ message: 'NGO profile updated', ngo });
   } catch (err) {
     console.error('Error updating NGO profile:', err);
+    if (err.name === 'ValidationError') {
+        return res.status(400).json({ error: err.message, details: err.errors });
+    }
     res.status(500).json({ error: 'Server error updating profile' });
   }
 });

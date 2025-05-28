@@ -1,0 +1,138 @@
+.admin-dashboard-container {
+  padding: 20px;
+}
+
+.admin-dashboard-container header h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-content {
+  display: flex;
+  gap: 20px;
+}
+
+.user-list-section {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 15px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.user-list-section h2 {
+  margin-top: 0;
+}
+
+.user-list-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.user-item {
+  border-bottom: 1px solid #eee;
+  padding: 10px 5px;
+}
+
+.user-item.selected {
+  background-color: #e6f7ff;
+}
+
+.user-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.user-item-header input[type=\"checkbox\"] {
+  margin-right: 10px;
+}
+
+.user-details {
+  padding: 10px;
+  margin-top: 5px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.user-details p {
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+
+.actions-section {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 15px;
+}
+
+.actions-section h2 {
+  margin-top: 0;
+}
+
+.action-item {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed #eee;
+}
+
+.action-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.action-item button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.action-form {
+  margin-top: 10px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  background-color: #fdfdfd;
+  border-radius: 4px;
+}
+
+.action-form h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.action-form input,
+.action-form select {
+  display: block;
+  width: calc(100% - 20px);
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.action-form button[type=\"submit\"] {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+} 

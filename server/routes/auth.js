@@ -6,6 +6,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const NGO = require('../models/NGO');
+const Volunteer = require('../models/Volunteer');
+const fs = require('fs');
+const path = require('path');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // POST /auth/login — Authenticate user and return token
@@ -111,19 +114,38 @@ router.delete('/users/:id', requireAuth, requireRole('admin'), async (req, res) 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Delete linked profile if it exists
+    // Delete linked profile and associated files if they exist
     if (user.role === 'volunteer' && user.refId) {
-      await Volunteer.findByIdAndDelete(user.refId);
+      const volunteerProfile = await Volunteer.findById(user.refId);
+      if (volunteerProfile) {
+        if (volunteerProfile.resumeUrl) {
+          const resumePath = path.join(__dirname, '..', volunteerProfile.resumeUrl); 
+          // Ensure path is correct relative to project root (uploads folder is in server/uploads)
+          // If volunteerProfile.resumeUrl is like '/uploads/resumes/file.pdf',
+          // then path.join(__dirname, '..', volunteerProfile.resumeUrl) should correctly point to server/uploads/resumes/file.pdf
+          // as __dirname is server/routes
+          if (fs.existsSync(resumePath)) {
+             fs.unlink(resumePath, (err) => {
+                if (err) console.error('Error deleting resume file during user deletion by admin:', err);
+                else console.log('Successfully deleted resume file by admin:', resumePath);
+            });
+          } else {
+            console.warn('Resume file not found at path for deletion:', resumePath);
+          }
+        }
+        await Volunteer.findByIdAndDelete(user.refId);
+      }
     } else if (user.role === 'ngo' && user.refId) {
+      // NGOs don't have associated files like resumes in this system to delete from filesystem
       await NGO.findByIdAndDelete(user.refId);
     }
 
     // Then delete the user
     await user.deleteOne();
 
-    res.json({ message: 'User and linked profile deleted', user });
+    res.json({ message: 'User and linked profile (and associated files) deleted', user });
   } catch (err) {
-    console.error('Error deleting user:', err);
+    console.error('Error deleting user by admin:', err);
     res.status(500).json({ error: 'Server error deleting user' });
   }
 });
