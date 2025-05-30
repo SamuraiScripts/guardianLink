@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 function LoginPage() {
   const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,7 +24,8 @@ function LoginPage() {
         token,
         role: decoded.role,
         userId: decoded.userId,
-        email: loggedInUser.email
+        email: loggedInUser.email,
+        refId: loggedInUser.refId
       });
 
       if (decoded.role === 'ngo') navigate('/ngo-dashboard');

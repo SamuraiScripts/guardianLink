@@ -273,10 +273,23 @@ router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume
       await User.findByIdAndUpdate(req.user.userId, { refId: volunteer._id });
     }
 
-    res.json({
+    let responseData = {
         message: isNewProfile ? 'Volunteer profile created and linked successfully' : 'Volunteer profile updated successfully',
         volunteer
-    });
+    };
+
+    if (isNewProfile) {
+        // Fetch the updated user to get their email for the new token, as it's not in req.user directly
+        const updatedUser = await User.findById(req.user.userId);
+        const newToken = jwt.sign(
+            { userId: updatedUser._id, role: updatedUser.role, refId: updatedUser.refId, email: updatedUser.email },
+            JWT_SECRET,
+            { expiresIn: '2h' }
+        );
+        responseData.token = newToken; // Add the new token to the response
+    }
+    
+    res.json(responseData);
 
   } catch (err) {
     console.error('Error updating/creating volunteer profile:', err);

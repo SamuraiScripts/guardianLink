@@ -15,34 +15,37 @@ function NGODashboard() {
   const [expandedVolunteerId, setExpandedVolunteerId] = useState(null);
 
   useEffect(() => {
-    if (!auth?.token) {
-      setError('Authentication token not found for fetching volunteers.');
+    // Only fetch data if profile is complete (refId exists)
+    if (auth?.refId && auth?.token) {
+      setLoading(true);
+      setError('');
+      axios.get('http://localhost:5050/volunteers', { 
+        headers: { Authorization: `Bearer ${auth.token}` }
+      })
+      .then(res => {
+        const completeVolunteers = res.data.filter(volunteer => 
+          volunteer.fullName && 
+          volunteer.weeklyAvailability !== undefined && volunteer.weeklyAvailability !== null &&
+          volunteer.areasOfExpertise && volunteer.areasOfExpertise.length > 0 &&
+          volunteer.resumeUrl
+        );
+        setVolunteers(completeVolunteers);
+        setFilteredVolunteers(completeVolunteers);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching volunteers:', err);
+        setError('Failed to load available volunteers. ' + (err.response?.data?.error || err.message));
+        setLoading(false);
+      });
+    } else if (!auth?.token) {
+      setError('Authentication token not found.');
       setLoading(false);
-      return;
+    } else {
+      // If no refId but token exists, it means profile is incomplete, no need to fetch dashboard data.
+      setLoading(false); 
     }
-
-    setLoading(true);
-    setError('');
-    axios.get('http://localhost:5050/volunteers', { 
-      headers: { Authorization: `Bearer ${auth.token}` }
-    })
-    .then(res => {
-      const completeVolunteers = res.data.filter(volunteer => 
-        volunteer.fullName && 
-        volunteer.weeklyAvailability !== undefined && volunteer.weeklyAvailability !== null &&
-        volunteer.areasOfExpertise && volunteer.areasOfExpertise.length > 0 &&
-        volunteer.resumeUrl
-      );
-      setVolunteers(completeVolunteers);
-      setFilteredVolunteers(completeVolunteers);
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error('Error fetching volunteers:', err);
-      setError('Failed to load available volunteers. ' + (err.response?.data?.error || err.message));
-      setLoading(false);
-    });
-  }, [auth?.token]);
+  }, [auth]); // Rerun if auth object changes (e.g. refId populated after profile completion)
 
   useEffect(() => {
     let Wfiltered = volunteers;
@@ -71,6 +74,27 @@ function NGODashboard() {
     console.log(`Attempting to navigate to message center for Volunteer: ${volunteer.fullName} (ID: ${volunteer._id})`);
     navigate(`/messages/new/${volunteer._id}`, { state: { recipientName: volunteer.fullName, recipientRole: 'volunteer' } });
   };
+
+  // Conditional rendering based on auth.refId
+  if (auth && (auth.role === 'ngo' || auth.role === 'volunteer') && !auth.refId) {
+    return (
+      <div className="admin-dashboard-container" style={{ padding: '20px', textAlign: 'center' }}>
+        <header>
+          <h1>Welcome, {auth.email}!</h1>
+        </header>
+        <div style={{ border: '1px solid #ffcc00', backgroundColor: '#fff9e6', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
+          <h2>Please complete your profile</h2>
+          <p>To access your dashboard and all features, you need to complete your organization's profile.</p>
+          <button 
+            onClick={() => navigate('/profile')} 
+            style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
+          >
+            Go to Profile Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-dashboard-container">
