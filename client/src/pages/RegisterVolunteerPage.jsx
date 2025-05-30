@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 export default function RegisterVolunteerPage() {
   const navigate = useNavigate();
+  const { setAuth } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -43,8 +45,20 @@ export default function RegisterVolunteerPage() {
 
     try {
       const res = await axios.post('http://localhost:5050/volunteers', data);
-      console.log('Success:', res.data);
-      navigate('/login');
+      const { token } = res.data;
+      if (token) {
+        const decodedPayload = JSON.parse(atob(token.split('.')[1]));
+        setAuth({
+          token,
+          role: decodedPayload.role,
+          userId: decodedPayload.userId,
+          email: decodedPayload.email,
+          refId: decodedPayload.refId
+        });
+        navigate('/volunteer-dashboard');
+      } else {
+        setError('Registration succeeded, but failed to log in automatically. Please try logging in.');
+      }
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || 'Something went wrong');

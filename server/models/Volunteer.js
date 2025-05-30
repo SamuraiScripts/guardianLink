@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const VolunteerSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
   weeklyAvailability: { type: Number, required: true },
   areasOfExpertise: { type: [String], default: [] },
   resumeUrl: { type: String },

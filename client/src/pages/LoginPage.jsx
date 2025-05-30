@@ -18,13 +18,14 @@ function LoginPage() {
     try {
       const res = await axios.post('http://localhost:5050/auth/login', { email, password });
 
-      const { token } = res.data;
+      const { token, user: loggedInUser } = res.data;
       const decoded = JSON.parse(atob(token.split('.')[1])); // decode JWT payload
 
       setAuth({
         token,
         role: decoded.role,
-        userId: decoded.userId
+        userId: decoded.userId,
+        email: loggedInUser.email
       });
 
       if (decoded.role === 'ngo') navigate('/ngo-dashboard');

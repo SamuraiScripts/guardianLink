@@ -29,7 +29,6 @@ function NGODashboard() {
     .then(res => {
       const completeVolunteers = res.data.filter(volunteer => 
         volunteer.fullName && 
-        volunteer.email && 
         volunteer.weeklyAvailability !== undefined && volunteer.weeklyAvailability !== null &&
         volunteer.areasOfExpertise && volunteer.areasOfExpertise.length > 0 &&
         volunteer.resumeUrl
@@ -70,7 +69,7 @@ function NGODashboard() {
 
   const handleContactVolunteer = (volunteer) => {
     console.log(`Attempting to navigate to message center for Volunteer: ${volunteer.fullName} (ID: ${volunteer._id})`);
-    navigate(`/messages/new/${volunteer._id}`, { state: { recipientName: volunteer.fullName, recipientEmail: volunteer.email, recipientRole: 'volunteer' } });
+    navigate(`/messages/new/${volunteer._id}`, { state: { recipientName: volunteer.fullName, recipientRole: 'volunteer' } });
   };
 
   return (
@@ -121,7 +120,6 @@ function NGODashboard() {
                   </div>
                   {expandedVolunteerId === volunteer._id && (
                     <div className="user-details">
-                      <p><strong>Email:</strong> {volunteer.email}</p>
                       <p><strong>Full Name:</strong> {volunteer.fullName}</p>
                       <p><strong>Weekly Availability (hrs):</strong> {volunteer.weeklyAvailability}</p>
                       <p><strong>Areas of Expertise:</strong> {(Array.isArray(volunteer.areasOfExpertise) ? volunteer.areasOfExpertise.join(', ') : volunteer.areasOfExpertise) || 'N/A'}</p>

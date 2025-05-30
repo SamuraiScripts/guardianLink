@@ -31,7 +31,8 @@ function RegisterNgoPage() {
       setAuth({
         token,
         role: decoded.role,
-        userId: decoded.userId
+        userId: decoded.userId,
+        email: email
       });
 
       navigate('/ngo-dashboard');

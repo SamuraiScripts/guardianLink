@@ -253,7 +253,6 @@ export default function AdminDashboard() {
                     {user.role === 'ngo' && user.profile && (
                       <>
                         <p><strong>Organization Name:</strong> {user.profile.organizationName}</p>
-                        <p><strong>Contact Email (Profile):</strong> {user.profile.email}</p> {/* Assuming NGO profile has its own email */}
                         <p><strong>Areas of Concern:</strong> {(Array.isArray(user.profile.areasOfConcern) ? user.profile.areasOfConcern.join(', ') : user.profile.areasOfConcern) || 'N/A'}</p>
                       </>
                     )}

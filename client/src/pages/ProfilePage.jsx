@@ -175,22 +175,26 @@ function ProfilePage() {
     }
   };
 
-  if (!profile) return <p>Loading profile...</p>;
+  if (!profile && auth.role !== 'admin' && !(message && message.includes('complete your profile'))) {
+    return <p>Loading profile...</p>;
+  }
+
+  const loginEmail = auth?.email || 'Email not available';
 
   return (
     <div>
       <h2>Your Profile</h2>
-      {message && <p>{message}</p>}
+      {message && <p className={message.startsWith('Failed') || message.startsWith('Error') ? 'error-message' : 'success-message'}>{message}</p>}
 
       {auth.role === 'admin' ? (
         <div>
           <div style={{ marginBottom: '15px' }}>
             <label>Email:</label>
-            <p style={{ marginTop: '5px' }}>{profile.email}</p>
+            <p style={{ marginTop: '5px' }}>{profile?.email || loginEmail}</p>
           </div>
           <div style={{ marginBottom: '15px' }}>
             <label>Role:</label>
-            <p style={{ marginTop: '5px' }}>{profile.role}</p>
+            <p style={{ marginTop: '5px' }}>{profile?.role || auth.role}</p>
           </div>
         </div>
       ) : auth.role === 'ngo' ? (
@@ -200,16 +204,16 @@ function ProfilePage() {
             {editing ? (
               <input id="organizationName" name="organizationName" value={form.organizationName || ''} onChange={handleChange} style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }} />
             ) : (
-              <p style={{ marginTop: '5px' }}>{profile.organizationName}</p>
+              <p style={{ marginTop: '5px' }}>{profile?.organizationName || form.organizationName /* Fallback for creation form */}</p>
             )}
           </div>
 
           <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="emailNgo">Contact Email:</label>
+            <label htmlFor="emailNgo">Login Email:</label>
             {editing ? (
-              <input id="emailNgo" name="email" value={form.email || ''} onChange={handleChange} style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }} />
+              <p style={{ marginTop: '5px', backgroundColor: '#f0f0f0', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box', width: '100%' }}>{loginEmail}</p>
             ) : (
-              <p style={{ marginTop: '5px' }}>{profile.email}</p>
+              <p style={{ marginTop: '5px' }}>{loginEmail}</p>
             )}
           </div>
 
@@ -224,79 +228,85 @@ function ProfilePage() {
                 style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }}
               />
             ) : (
-              <p style={{ marginTop: '5px' }}>{(Array.isArray(profile.areasOfConcern) ? profile.areasOfConcern.join(', ') : profile.areasOfConcern) || 'N/A'}</p>
+              <p style={{ marginTop: '5px' }}>{(Array.isArray(profile?.areasOfConcern) ? profile.areasOfConcern.join(', ') : profile?.areasOfConcern) || 'N/A'}</p>
             )}
           </div>
         </div>
-      ) : (
+      ) : auth.role === 'volunteer' ? (
         <div>
           <div style={{ marginBottom: '15px' }}>
             <label htmlFor="fullName">Full Name:</label>
             {editing ? (
               <input id="fullName" name="fullName" value={form.fullName || ''} onChange={handleChange} style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }} />
             ) : (
-              <p style={{ marginTop: '5px' }}>{profile.fullName}</p>
+              <p style={{ marginTop: '5px' }}>{profile?.fullName || form.fullName}</p>
             )}
           </div>
 
           <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="emailVolunteer">Email:</label>
+            <label htmlFor="emailVolunteer">Login Email:</label>
             {editing ? (
-              <input id="emailVolunteer" name="email" value={form.email || ''} onChange={handleChange} style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }} />
+              <p style={{ marginTop: '5px', backgroundColor: '#f0f0f0', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box', width: '100%' }}>{loginEmail}</p>
             ) : (
-              <p style={{ marginTop: '5px' }}>{profile.email}</p>
+              <p style={{ marginTop: '5px' }}>{loginEmail}</p>
             )}
           </div>
-
+          
           <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="weeklyAvailability">Weekly Availability (hrs):</label>
+            <label htmlFor="weeklyAvailability">Weekly Availability (hours):</label>
             {editing ? (
-              <input id="weeklyAvailability" name="weeklyAvailability" value={form.weeklyAvailability || ''} onChange={handleChange} style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }} />
+              <input type="number" id="weeklyAvailability" name="weeklyAvailability" value={form.weeklyAvailability || ''} onChange={handleChange} style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }} />
             ) : (
-              <p style={{ marginTop: '5px' }}>{profile.weeklyAvailability}</p>
+              <p style={{ marginTop: '5px' }}>{profile?.weeklyAvailability}</p>
             )}
           </div>
 
           <div style={{ marginBottom: '15px' }}>
             <label htmlFor="areasOfExpertise">Areas of Expertise (comma-separated):</label>
             {editing ? (
-              <input 
-                id="areasOfExpertise"
-                name="areasOfExpertise" 
-                value={Array.isArray(form.areasOfExpertise) ? form.areasOfExpertise.join(', ') : form.areasOfExpertise || ''} 
-                onChange={handleChange} 
-                style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }}
-              />
+              <input id="areasOfExpertise" name="areasOfExpertise" value={Array.isArray(form.areasOfExpertise) ? form.areasOfExpertise.join(', ') : form.areasOfExpertise || ''} onChange={handleChange} style={{ display: 'block', width: '100%', marginTop: '5px', boxSizing: 'border-box' }}/>
             ) : (
-              <p style={{ marginTop: '5px' }}>{(Array.isArray(profile.areasOfExpertise) ? profile.areasOfExpertise.join(', ') : profile.areasOfExpertise) || 'N/A'}</p>
+              <p style={{ marginTop: '5px' }}>{(Array.isArray(profile?.areasOfExpertise) ? profile.areasOfExpertise.join(', ') : profile?.areasOfExpertise) || 'N/A'}</p>
             )}
           </div>
 
           <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="resume">Resume:</label>
-            {editing ? (
-              <input id="resume" type="file" name="resume" onChange={handleFileChange} style={{ display: 'block', marginTop: '5px' }} />
-            ) : (
-              profile.resumeUrl ? (
-                <a href={`http://localhost:5050${profile.resumeUrl}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: '5px' }}>View Current Resume</a>
-              ) : (
-                <p style={{ marginTop: '5px' }}>No resume uploaded.</p>
-              )
+            <label htmlFor="resume">Resume (PDF only):</label>
+            {editing && (
+                 <input type="file" id="resume" name="resume" onChange={handleFileChange} accept=".pdf,.doc,.docx" style={{ display: 'block', width: '100%', marginTop: '5px' }} />
+            )}
+            {!editing && profile?.resumeUrl && (
+                 <p style={{ marginTop: '5px' }}><a href={`http://localhost:5050${profile.resumeUrl}`} target="_blank" rel="noopener noreferrer">View Resume</a></p>
+            )}
+            {!editing && !profile?.resumeUrl && (
+                 <p style={{ marginTop: '5px' }}>N/A</p>
+            )}
+            {editing && profile?.resumeUrl && !resumeFile && (
+                <p style={{marginTop: '5px', fontSize: '0.9em', color: 'gray'}}>Current file: {profile.resumeUrl.split('/').pop()}</p>
             )}
           </div>
+
         </div>
+      ) : (
+         <p>Profile information is not available for your role or an error occurred.</p>
       )}
 
-      <br />
-      {auth.role !== 'admin' && (
-        editing ? (
-          <>
-            <button onClick={handleSave}>Save Changes</button>
-            <button onClick={() => setEditing(false)}>Cancel</button>
-          </>
-        ) : (
-          <button onClick={() => setEditing(true)}>Edit Profile</button>
-        )
+      {!editing && auth.role !== 'admin' && profile && ( 
+        <button onClick={() => setEditing(true)} style={{ marginRight: '10px' }}>Edit Profile</button>
+      )}
+      {editing && auth.role !== 'admin' && (
+        <>
+          <button onClick={handleSave} style={{ marginRight: '10px' }}>Save Changes</button>
+          <button onClick={() => {
+            setEditing(false);
+            setForm(profile?._id ? profile : (auth.role === 'volunteer' 
+                ? { fullName: '', weeklyAvailability: '', areasOfExpertise: [], resumeUrl: null }
+                : { organizationName: '', areasOfConcern: [] }) 
+            );
+            setMessage(''); 
+            setResumeFile(null); 
+          }}>Cancel</button>
+        </>
       )}
     </div>
   );

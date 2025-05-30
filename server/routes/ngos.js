@@ -32,7 +32,6 @@ router.post('/', async (req, res) => {
     // Create NGO profile
     const ngo = new NGO({
       organizationName,
-      email,
       areasOfConcern
     });
     const savedNGO = await ngo.save();
@@ -60,6 +59,10 @@ router.post('/', async (req, res) => {
     });
   } catch (err) {
     console.error('Error registering NGO:', err);
+    if (savedNGO && !savedUser) { 
+        await NGO.findByIdAndDelete(savedNGO._id);
+        return res.status(500).json({ error: 'Server error: Could not create user for NGO profile.'})
+    }
     res.status(500).json({ error: 'Server error during registration' });
   }
 });
@@ -115,7 +118,7 @@ router.get('/me', requireAuth, requireRole('ngo'), async (req, res) => {
 
 // PATCH /ngos/me — Edit own NGO Profile
 router.patch('/me', requireAuth, requireRole('ngo'), async (req, res) => {
-  const { organizationName, email, areasOfConcern } = req.body;
+  const { organizationName, areasOfConcern } = req.body;
 
   try {
     let ngo;
@@ -127,7 +130,6 @@ router.patch('/me', requireAuth, requireRole('ngo'), async (req, res) => {
       if (!ngo) return res.status(404).json({ error: 'NGO profile not found' });
 
       if (organizationName) ngo.organizationName = organizationName;
-      if (email) ngo.email = email;
       if (areasOfConcern) {
          ngo.areasOfConcern = Array.isArray(areasOfConcern) 
             ? areasOfConcern 
@@ -139,12 +141,11 @@ router.patch('/me', requireAuth, requireRole('ngo'), async (req, res) => {
     } else {
       // Create new profile + link to User
       isNewProfile = true;
-      if (!organizationName || !email) {
-        return res.status(400).json({ error: 'Organization name and contact email are required for new NGO profile.' });
+      if (!organizationName) {
+        return res.status(400).json({ error: 'Organization name is required for new NGO profile.' });
       }
       ngo = new NGO({ 
         organizationName, 
-        email,
         areasOfConcern: Array.isArray(areasOfConcern) 
             ? areasOfConcern 
             : typeof areasOfConcern === 'string' 

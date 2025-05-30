@@ -28,7 +28,6 @@ function VolunteerDashboard() {
     .then(res => {
       const completeNgos = res.data.filter(ngo => 
         ngo.organizationName && 
-        ngo.email && 
         ngo.areasOfConcern && 
         ngo.areasOfConcern.length > 0
       );
@@ -63,7 +62,7 @@ function VolunteerDashboard() {
 
   const handleContactNgo = (ngo) => {
     console.log(`Attempting to navigate to message center for NGO: ${ngo.organizationName} (ID: ${ngo._id})`);
-    navigate(`/messages/new/${ngo._id}`, { state: { recipientName: ngo.organizationName, recipientEmail: ngo.email, recipientRole: 'ngo' } });
+    navigate(`/messages/new/${ngo._id}`, { state: { recipientName: ngo.organizationName, recipientRole: 'ngo' } });
   };
 
   return (
@@ -101,7 +100,6 @@ function VolunteerDashboard() {
                   </div>
                   {expandedNgoId === ngo._id && (
                     <div className="user-details">
-                      <p><strong>Email:</strong> {ngo.email}</p>
                       <p><strong>Areas of Concern:</strong> {(Array.isArray(ngo.areasOfConcern) ? ngo.areasOfConcern.join(', ') : ngo.areasOfConcern) || 'N/A'}</p>
                       <button 
                         onClick={() => handleContactNgo(ngo)} 

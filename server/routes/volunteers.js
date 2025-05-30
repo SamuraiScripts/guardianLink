@@ -47,7 +47,6 @@ router.post('/', upload.single('resume'), async (req, res) => {
 
   const resumeUrl = req.file ? `/uploads/resumes/${req.file.filename}` : null;
 
-  // Validate required fields + attestation checkbox
   if (
   !fullName ||
   !email ||
@@ -57,32 +56,32 @@ router.post('/', upload.single('resume'), async (req, res) => {
   !areasOfExpertise ||
   backgroundCheck !== 'true'
   ) {
-  // Delete orphaned resume if it was uploaded but the request is invalid
   if (req.file) {
     fs.unlink(path.join(__dirname, '../uploads/resumes', req.file.filename), (err) => {
       if (err) console.error('Failed to delete orphaned resume:', err);
     });
   }
-
   return res.status(400).json({ error: 'Missing required fields or background check not passed' });
   }
 
   try {
-    // Ensure email is unique
     const existing = await User.findOne({ email });
     if (existing) {
+      if (req.file) {
+        fs.unlink(path.join(__dirname, '../uploads/resumes', req.file.filename), (err) => {
+          if (err) console.error('Failed to delete orphaned resume due to existing email:', err);
+        });
+      }
       return res.status(400).json({ error: 'Email already in use' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create volunteer profile
     const volunteer = new Volunteer({
       fullName,
-      email,
       weeklyAvailability,
       resumeUrl,
-      backgroundCheck: true, // we validated it's 'true'
+      backgroundCheck: true, 
       areasOfExpertise: Array.isArray(areasOfExpertise)
         ? areasOfExpertise
         : areasOfExpertise
@@ -92,7 +91,6 @@ router.post('/', upload.single('resume'), async (req, res) => {
 
     const savedVolunteer = await volunteer.save();
 
-    // Create user for login
     const user = new User({
       email,
       password: hashedPassword,
@@ -101,14 +99,37 @@ router.post('/', upload.single('resume'), async (req, res) => {
     });
 
     const savedUser = await user.save();
+    if (!savedUser && savedVolunteer) {
+        await Volunteer.findByIdAndDelete(savedVolunteer._id);
+        if (req.file) {
+            fs.unlink(path.join(__dirname, '../uploads/resumes', req.file.filename), (err) => {
+              if (err) console.error('Failed to delete resume after user save failure:', err);
+            });
+        }
+        return res.status(500).json({ error: 'Server error: Could not create user for volunteer profile.' });
+    }
+
+    // Generate JWT token for the newly created volunteer user
+    const token = jwt.sign(
+      { userId: savedUser._id, role: savedUser.role, refId: savedUser.refId, email: savedUser.email }, // Include email in token payload
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
 
     res.status(201).json({
       message: 'Volunteer registered successfully',
-      userId: savedUser._id,
-      volunteerId: savedVolunteer._id
+      token // Return the token
     });
   } catch (err) {
     console.error('Error registering volunteer:', err);
+    if (req.file) {
+        const volunteerExists = await Volunteer.findOne({ resumeUrl: `/uploads/resumes/${req.file.filename}` });
+        if (!volunteerExists) {
+            fs.unlink(path.join(__dirname, '../uploads/resumes', req.file.filename), (unlinkErr) => {
+                if (unlinkErr) console.error('Failed to delete resume after general registration error:', unlinkErr);
+            });
+        }
+    }
     res.status(500).json({ error: 'Server error during registration' });
   }
 });
@@ -162,7 +183,6 @@ router.get('/me', requireAuth, requireRole('volunteer'), async (req, res) => {
 router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume'), async (req, res) => {
   const {
     fullName,
-    email,
     weeklyAvailability,
     areasOfExpertise
   } = req.body;
@@ -186,9 +206,7 @@ router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume
 
       const originalResumeUrl = volunteer.resumeUrl;
 
-      // Update fields from request body
       if (fullName) volunteer.fullName = fullName;
-      if (email) volunteer.email = email;
       if (weeklyAvailability) volunteer.weeklyAvailability = weeklyAvailability;
       if (areasOfExpertise) {
         volunteer.areasOfExpertise = Array.isArray(areasOfExpertise)
@@ -215,10 +233,10 @@ router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume
         }
       } catch (saveError) {
         if (newResumeFilePath) {
-          fs.unlink(newResumeFilePath, (unlinkErr) => {
-            if (unlinkErr) console.error('Failed to delete new resume after save error:', unlinkErr);
-            else console.log('Cleaned up new resume after save error:', newResumeFilePath);
-          });
+            fs.unlink(newResumeFilePath, (unlinkErr) => {
+                if (unlinkErr) console.error('Failed to delete new resume after save error:', unlinkErr);
+                else console.log('Cleaned up new resume after save error:', newResumeFilePath);
+            });
         }
         throw saveError;
       }
@@ -226,13 +244,12 @@ router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume
     } else {
       // Create new profile + link to User
       isNewProfile = true;
-      if (!fullName || !email || !weeklyAvailability) {
+      if (!fullName || !weeklyAvailability) {
         if (newResumeFilePath) fs.unlinkSync(newResumeFilePath);
-        return res.status(400).json({ error: 'Missing required fields for profile creation (fullName, email, weeklyAvailability).' });
+        return res.status(400).json({ error: 'Missing required fields for profile creation (fullName, weeklyAvailability).' });
       }
       volunteer = new Volunteer({
         fullName,
-        email,
         weeklyAvailability,
         backgroundCheck: true,
         areasOfExpertise: Array.isArray(areasOfExpertise)
@@ -249,7 +266,6 @@ router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume
          if (newResumeFilePath) {
             fs.unlink(newResumeFilePath, (unlinkErr) => {
                 if (unlinkErr) console.error('Failed to delete new resume after save error (new profile):', unlinkErr);
-                else console.log('Cleaned up new resume after save error (new profile):', newResumeFilePath);
             });
         }
         throw saveError;
@@ -257,23 +273,27 @@ router.patch('/me', requireAuth, requireRole('volunteer'), upload.single('resume
       await User.findByIdAndUpdate(req.user.userId, { refId: volunteer._id });
     }
 
-    if (isNewProfile) {
-      const updatedUser = await User.findById(req.user.userId);
-      const newToken = jwt.sign(
-        { userId: updatedUser._id, role: updatedUser.role, refId: updatedUser.refId, email: updatedUser.email },
-        JWT_SECRET,
-        { expiresIn: '2h' }
-      );
-      return res.json({ 
-        message: 'Volunteer profile created and updated successfully', 
-        volunteer, 
-        token: newToken 
-      });
-    } else {
-      return res.json({ message: 'Volunteer profile updated', volunteer });
-    }
+    res.json({
+        message: isNewProfile ? 'Volunteer profile created and linked successfully' : 'Volunteer profile updated successfully',
+        volunteer
+    });
+
   } catch (err) {
-    console.error('Error updating Volunteer profile:', err.message, err.stack);
+    console.error('Error updating/creating volunteer profile:', err);
+    if (newResumeFilePath && fs.existsSync(newResumeFilePath)) {
+        let shouldDelete = true;
+        if (err.name === 'ValidationError' && volunteer && volunteer.resumeUrl === `/uploads/resumes/${req.file.filename}`) {
+             shouldDelete = false;
+        } else if (err.status === 404 && req.user.refId) {
+             shouldDelete = true; 
+        }
+
+        if (shouldDelete) {
+            fs.unlink(newResumeFilePath, (unlinkErr) => {
+                if (unlinkErr) console.error('Failed to delete new resume after general PATCH error:', unlinkErr);
+            });
+        }
+    }
     if (err.name === 'ValidationError') {
         return res.status(400).json({ error: err.message, details: err.errors });
     }
