@@ -105,7 +105,7 @@ function VolunteerDashboard() {
               id="filterConcern"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="e.g., environment, education"
+              placeholder="e.g. XSS attacks, phishing attempts, etc."
               style={{ marginBottom: '15px', padding: '8px', width: 'calc(100% - 22px)' }}
             />
           </div>

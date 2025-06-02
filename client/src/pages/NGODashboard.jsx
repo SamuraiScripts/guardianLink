@@ -113,7 +113,7 @@ function NGODashboard() {
                 id="filterExpertise"
                 value={expertiseSearchTerm}
                 onChange={(e) => setExpertiseSearchTerm(e.target.value)}
-                placeholder="e.g., web development, teaching"
+                placeholder="e.g. SQL injection, cloud security, etc."
                 style={{ padding: '8px', width: 'calc(100% - 220px)' }}
               />
             </div>
@@ -124,7 +124,7 @@ function NGODashboard() {
                 id="filterHours"
                 value={minHoursFilter}
                 onChange={(e) => setMinHoursFilter(e.target.value)}
-                placeholder="e.g., 5"
+                placeholder="e.g. 5"
                 style={{ padding: '8px', width: 'calc(100% - 220px)' }}
               />
             </div>
