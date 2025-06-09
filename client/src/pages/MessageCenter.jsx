@@ -199,7 +199,7 @@ export default function MessageCenter() {
                 >
                   <div className="conversation-info">
                     <div className="conversation-user">
-                      <span className="user-name">{conversation.user.email}</span>
+                      <span className="user-name">{conversation.user.displayName}</span>
                       <span className="user-role">{conversation.user.role}</span>
                     </div>
                     <div className="conversation-preview">
@@ -230,7 +230,7 @@ export default function MessageCenter() {
           {selectedConversation ? (
             <>
               <div className="chat-header">
-                <h3>{selectedConversation.user.email}</h3>
+                <h3>{selectedConversation.user.displayName}</h3>
                 <span className="user-role-badge">{selectedConversation.user.role}</span>
               </div>
 

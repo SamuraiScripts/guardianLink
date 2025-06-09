@@ -97,10 +97,32 @@ router.get('/inbox', requireAuth, async (req, res) => {
       const lastMessage = conv.lastMessage;
       const otherUserId = lastMessage.sender.toString() === userId ? lastMessage.recipient.toString() : lastMessage.sender.toString();
       
-      const user = await User.findById(otherUserId).select('email role');
+      const user = await User.findById(otherUserId).select('email role refId');
       if (!user) {
         console.warn(`User not found for ID: ${otherUserId}`);
         return null;
+      }
+      
+      // Get the display name based on user role
+      let displayName = user.email; // Fallback to email
+      if (user.refId) {
+        try {
+          if (user.role === 'volunteer') {
+            const Volunteer = require('../models/Volunteer');
+            const volunteer = await Volunteer.findById(user.refId);
+            if (volunteer && volunteer.fullName) {
+              displayName = volunteer.fullName;
+            }
+          } else if (user.role === 'ngo') {
+            const NGO = require('../models/NGO');
+            const ngo = await NGO.findById(user.refId);
+            if (ngo && ngo.organizationName) {
+              displayName = ngo.organizationName;
+            }
+          }
+        } catch (err) {
+          console.warn(`Error fetching profile for user ${otherUserId}:`, err);
+        }
       }
       
       return {
@@ -108,7 +130,8 @@ router.get('/inbox', requireAuth, async (req, res) => {
         user: {
           _id: user._id,
           email: user.email,
-          role: user.role
+          role: user.role,
+          displayName: displayName || user.email // Ensure we always have a fallback
         },
         lastMessage: lastMessage,
         unreadCount: conv.unreadCount
@@ -224,16 +247,39 @@ router.get('/user-id/:profileId', requireAuth, async (req, res) => {
   try {
     const { profileId } = req.params;
     
-    const user = await User.findOne({ refId: profileId }).select('_id email role');
+    const user = await User.findOne({ refId: profileId }).select('_id email role refId');
     
     if (!user) {
       return res.status(404).json({ error: 'User not found for this profile' });
     }
 
+    // Get the display name based on user role
+    let displayName = user.email; // Fallback to email
+    if (user.refId) {
+      try {
+        if (user.role === 'volunteer') {
+          const Volunteer = require('../models/Volunteer');
+          const volunteer = await Volunteer.findById(user.refId);
+          if (volunteer && volunteer.fullName) {
+            displayName = volunteer.fullName;
+          }
+        } else if (user.role === 'ngo') {
+          const NGO = require('../models/NGO');
+          const ngo = await NGO.findById(user.refId);
+          if (ngo && ngo.organizationName) {
+            displayName = ngo.organizationName;
+          }
+        }
+      } catch (err) {
+        console.warn(`Error fetching profile for user ${user._id}:`, err);
+      }
+    }
+
     res.json({ 
       userId: user._id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      displayName: displayName || user.email // Ensure we always have a fallback
     });
   } catch (err) {
     console.error('Error finding user for profile:', err);

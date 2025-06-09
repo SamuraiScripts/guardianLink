@@ -41,7 +41,7 @@ export default function NewConversation() {
       // If we didn't have recipient info from state, use the fetched info
       if (!recipientInfo) {
         setRecipientInfo({
-          name: response.data.email,
+          name: response.data.displayName || response.data.email,
           role: response.data.role
         });
       }
