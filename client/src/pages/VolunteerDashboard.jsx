@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './AdminDashboard.css'; // Import CSS for button styling
 
 function VolunteerDashboard() {
   const { auth } = useContext(AuthContext);
@@ -127,7 +128,7 @@ function VolunteerDashboard() {
                       <p><strong>Areas of Concern:</strong> {(Array.isArray(ngo.areasOfConcern) ? ngo.areasOfConcern.join(', ') : ngo.areasOfConcern) || 'N/A'}</p>
                       <button 
                         onClick={() => handleContactNgo(ngo)} 
-                        style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}
+                        className="contact-button"
                       >
                         Contact {ngo.organizationName}
                       </button>

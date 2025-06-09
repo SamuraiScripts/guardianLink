@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './AdminDashboard.css'; // Import CSS for button styling
 
 function NGODashboard() {
   const { auth } = useContext(AuthContext);
@@ -152,7 +153,7 @@ function NGODashboard() {
                       ) : <p><strong>Resume:</strong> N/A</p>}
                       <button 
                         onClick={() => handleContactVolunteer(volunteer)} 
-                        style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}
+                        className="contact-button"
                       >
                         Contact {volunteer.fullName}
                       </button>

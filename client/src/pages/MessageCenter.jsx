@@ -264,13 +264,13 @@ export default function MessageCenter() {
 
               <form onSubmit={handleSendMessage} className="message-input-form">
                 <div className="message-input-container">
-                  <input
-                    type="text"
+                  <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type your message..."
                     className="message-input"
                     disabled={sendingMessage}
+                    rows={3}
                   />
                   <button
                     type="submit"
