@@ -1,0 +1,166 @@
+.new-conversation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 20px;
+}
+
+.new-conversation-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.new-conversation-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.new-conversation-header h1 {
+  color: #2c3e50;
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.new-conversation-header p {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.recipient-role {
+  color: #28a745;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.new-conversation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.message-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message-input-section label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.message-textarea {
+  padding: 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+
+.message-textarea:focus {
+  border-color: #2196f3;
+}
+
+.message-textarea:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid #f5c6cb;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.cancel-button,
+.send-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.cancel-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.send-button {
+  background-color: #2196f3;
+  color: white;
+}
+
+.send-button:hover:not(:disabled) {
+  background-color: #1976d2;
+}
+
+.cancel-button:disabled,
+.send-button:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.new-conversation-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .new-conversation {
+    padding: 10px;
+  }
+
+  .new-conversation-container {
+    padding: 24px;
+  }
+
+  .new-conversation-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .cancel-button,
+  .send-button {
+    width: 100%;
+  }
+} 

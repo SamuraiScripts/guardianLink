@@ -12,6 +12,7 @@ import NGODashboard from './pages/NGODashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfilePage from './pages/ProfilePage';
 import MessageCenter from './pages/MessageCenter';
+import NewConversation from './pages/NewConversation';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/messages" element={<MessageCenter />} />
+        <Route path="/messages/new/:recipientId" element={<NewConversation />} />
       </Routes>
     </Router>
   );
