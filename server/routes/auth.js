@@ -208,4 +208,59 @@ router.patch('/users/:id/password', requireAuth, requireRole('admin'), async (re
   }
 });
 
+// POST /auth/forgot-password - Send password reset message to admin for registered users only
+router.post('/forgot-password', async (req, res) => {
+  const { userEmail } = req.body;
+
+  if (!userEmail) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    // Check if the email is registered in our system
+    const requestingUser = await User.findOne({ email: userEmail });
+    if (!requestingUser) {
+      return res.status(404).json({ error: 'This email is not registered in our system.' });
+    }
+
+    // Find all admin users
+    const adminUsers = await User.find({ role: 'admin' });
+
+    if (adminUsers.length === 0) {
+      return res.status(500).json({ error: 'No admin users found to process the request' });
+    }
+
+    // Import Message model and utility function
+    const Message = require('../models/Message');
+    const { generateConversationId } = require('../utils/messageUtils');
+
+    // Send message to each admin
+    const messageContent = `This user requests a password reset.`;
+    
+    const messagePromises = adminUsers.map(async (admin) => {
+      const conversationId = generateConversationId(requestingUser._id, admin._id);
+      
+      const message = new Message({
+        conversationId,
+        sender: requestingUser._id,
+        recipient: admin._id,
+        content: messageContent
+      });
+
+      return message.save();
+    });
+
+    await Promise.all(messagePromises);
+
+    res.json({ 
+      message: 'Password reset request has been sent to administrators. Check your email for a response.',
+      success: true
+    });
+
+  } catch (err) {
+    console.error('Error processing forgot password request:', err);
+    res.status(500).json({ error: 'Server error processing password reset request' });
+  }
+});
+
 module.exports = router;
