@@ -30,25 +30,22 @@ function NavBar() {
     }
   };
 
-  const hideOnRoutes = [
+  const handleLogout = () => {
+    setAuth({ token: null, role: null, userId: null });
+    navigate('/');
+  };
+
+  // Show non-authenticated navbar on login/register pages OR when user is not logged in
+  const authRoutes = [
     '/login',
     '/register-type',
     '/register-volunteer',
     '/register-ngo'
   ];
 
-  // Hide NavBar on certain pages
-  if (hideOnRoutes.includes(location.pathname)) {
-    return null;
-  }
+  const shouldShowNonAuthNavbar = authRoutes.includes(location.pathname) || !auth || !auth.token;
 
-  const handleLogout = () => {
-    setAuth({ token: null, role: null, userId: null });
-    navigate('/');
-  };
-
-  // Null-safe check before accessing auth.token
-  if (!auth || !auth.token) {
+  if (shouldShowNonAuthNavbar) {
     return (
       <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
         <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>

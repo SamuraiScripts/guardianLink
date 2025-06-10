@@ -39,21 +39,10 @@ router.get('/inbox', requireAuth, async (req, res) => {
     const mongoose = require('mongoose');
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    // First, let's check if there are any messages for this user
+    // Get all messages for this user
     const allUserMessages = await Message.find({
       $or: [{ sender: userObjectId }, { recipient: userObjectId }]
     });
-    
-    console.log(`User ${userId} has ${allUserMessages.length} messages total`);
-    
-    // Log first few messages to see their structure
-    console.log('First few messages:', allUserMessages.slice(0, 2).map(msg => ({
-      _id: msg._id,
-      conversationId: msg.conversationId,
-      sender: msg.sender,
-      recipient: msg.recipient,
-      content: msg.content.substring(0, 50) + '...'
-    })));
     
     // Aggregate to get the latest message per conversation
     const conversations = await Message.aggregate([
@@ -84,13 +73,6 @@ router.get('/inbox', requireAuth, async (req, res) => {
         $sort: { "lastMessage.timestamp": -1 }
       }
     ]);
-
-    console.log(`Found ${conversations.length} conversations for user ${userId}`);
-    console.log('Aggregation result:', conversations.map(conv => ({
-      conversationId: conv._id,
-      lastMessageId: conv.lastMessage._id,
-      unreadCount: conv.unreadCount
-    })));
 
     // Populate user info for each conversation
     const results = await Promise.all(conversations.map(async (conv) => {
