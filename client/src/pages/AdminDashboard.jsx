@@ -330,10 +330,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-        
-        <div className="admin-sidebar-space">
-          {/* Future space for images */}
-        </div>
       </div>
     </div>
   );
