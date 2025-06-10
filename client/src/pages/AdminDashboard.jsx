@@ -210,123 +210,129 @@ export default function AdminDashboard() {
 
 
   return (
-    <div className="admin-dashboard-container">
-      <header>
-        <h1>Admin Dashboard</h1>
-      </header>
-      {message && <p className="success-message">{message}</p>}
-      {error && !message && <p className="error-message">{error}</p>} {/* Show general error if no specific success message */}
+    <div className="page-container">
+      <div className="page-content">
+        <div className="admin-main-content">
+          <header>
+            <h1>Admin Dashboard</h1>
+          </header>
+          {message && <p className="success-message">{message}</p>}
+          {error && !message && <p className="error-message">{error}</p>} {/* Show general error if no specific success message */}
 
+          <div className="dashboard-content">
+            <div className="user-list-section">
+              <h2>Users</h2>
+              {/* Filter Dropdown */}
+              <div className="action-item">
+                <label htmlFor="filter">Filter by type: </label>
+                <select id="filter" value={filter} onChange={(e) => setFilter(e.target.value)}>
+                  <option value="all">All</option>
+                  <option value="volunteer">Volunteer</option>
+                  <option value="ngo">NGO</option>
+                </select>
+              </div>
+              {filteredUsers.length === 0 && !loading && <p>No users found.</p>}
+              <ul>
+                {filteredUsers.map(user => (
+                  <li key={user._id} className={`user-item ${selectedUserId === user._id ? 'selected' : ''}`}>
+                    <div className="user-item-header" onClick={() => setExpandedUserId(expandedUserId === user._id ? null : user._id)}>
+                      <input
+                        type="checkbox"
+                        checked={selectedUserId === user._id}
+                        onChange={() => setSelectedUserId(selectedUserId === user._id ? null : user._id)}
+                        onClick={(e) => e.stopPropagation()} // Prevent row click when checkbox is clicked
+                      />
+                      <span>
+                        {user.role === 'ngo' ? user.profile?.organizationName || user.email : user.profile?.fullName || user.email} ({user.role})
+                      </span>
+                      <span>{expandedUserId === user._id ? '▼' : '▶'}</span>
+                    </div>
+                    {expandedUserId === user._id && (
+                      <div className="user-details">
+                        <p><strong>Email:</strong> {user.email}</p>
+                        {user.role === 'volunteer' && user.profile && (
+                          <>
+                            <p><strong>Full Name:</strong> {user.profile.fullName}</p>
+                            <p><strong>Weekly Availability (hrs):</strong> {user.profile.weeklyAvailability}</p>
+                            <p><strong>Areas of Expertise:</strong> {(Array.isArray(user.profile.areasOfExpertise) ? user.profile.areasOfExpertise.join(', ') : user.profile.areasOfExpertise) || 'N/A'}</p>
+                            {user.profile.resumeUrl ? (
+                              <p><strong>Resume:</strong> <a href={`http://localhost:5050${user.profile.resumeUrl}`} target="_blank" rel="noopener noreferrer">View Resume</a></p>
+                            ) : <p><strong>Resume:</strong> N/A</p>}
+                          </>
+                        )}
+                        {user.role === 'ngo' && user.profile && (
+                          <>
+                            <p><strong>Organization Name:</strong> {user.profile.organizationName}</p>
+                            <p><strong>Areas of Concern:</strong> {(Array.isArray(user.profile.areasOfConcern) ? user.profile.areasOfConcern.join(', ') : user.profile.areasOfConcern) || 'N/A'}</p>
+                          </>
+                        )}
+                         {!user.refId && <p><em>Profile data not yet created for this user.</em></p>}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-      <div className="dashboard-content">
-        <div className="user-list-section">
-          <h2>Users</h2>
-          {filteredUsers.length === 0 && !loading && <p>No users found.</p>}
-          <ul>
-            {filteredUsers.map(user => (
-              <li key={user._id} className={`user-item ${selectedUserId === user._id ? 'selected' : ''}`}>
-                <div className="user-item-header" onClick={() => setExpandedUserId(expandedUserId === user._id ? null : user._id)}>
-                  <input
-                    type="checkbox"
-                    checked={selectedUserId === user._id}
-                    onChange={() => setSelectedUserId(selectedUserId === user._id ? null : user._id)}
-                    onClick={(e) => e.stopPropagation()} // Prevent row click when checkbox is clicked
-                  />
-                  <span>
-                    {user.role === 'ngo' ? user.profile?.organizationName || user.email : user.profile?.fullName || user.email} ({user.role})
-                  </span>
-                  <span>{expandedUserId === user._id ? '▼' : '▶'}</span>
-                </div>
-                {expandedUserId === user._id && (
-                  <div className="user-details">
-                    <p><strong>Email:</strong> {user.email}</p>
-                    {user.role === 'volunteer' && user.profile && (
-                      <>
-                        <p><strong>Full Name:</strong> {user.profile.fullName}</p>
-                        <p><strong>Weekly Availability (hrs):</strong> {user.profile.weeklyAvailability}</p>
-                        <p><strong>Areas of Expertise:</strong> {(Array.isArray(user.profile.areasOfExpertise) ? user.profile.areasOfExpertise.join(', ') : user.profile.areasOfExpertise) || 'N/A'}</p>
-                        {user.profile.resumeUrl ? (
-                          <p><strong>Resume:</strong> <a href={`http://localhost:5050${user.profile.resumeUrl}`} target="_blank" rel="noopener noreferrer">View Resume</a></p>
-                        ) : <p><strong>Resume:</strong> N/A</p>}
-                      </>
-                    )}
-                    {user.role === 'ngo' && user.profile && (
-                      <>
-                        <p><strong>Organization Name:</strong> {user.profile.organizationName}</p>
-                        <p><strong>Areas of Concern:</strong> {(Array.isArray(user.profile.areasOfConcern) ? user.profile.areasOfConcern.join(', ') : user.profile.areasOfConcern) || 'N/A'}</p>
-                      </>
-                    )}
-                     {!user.refId && <p><em>Profile data not yet created for this user.</em></p>}
-                  </div>
+            <div className="actions-section">
+              <h2>Actions</h2>
+
+              {/* Create User */}
+              <div className="action-item">
+                <button onClick={() => {setShowCreateUserForm(!showCreateUserForm); setShowAssignRoleForm(false); setShowResetPasswordForm(false);}}>Create User</button>
+                {showCreateUserForm && (
+                  <form onSubmit={handleCreateUser} className="action-form">
+                    <h3>Create New User</h3>
+                    <input type="email" name="email" value={createUserForm.email} onChange={handleInputChange(setCreateUserForm)} placeholder="Email" required />
+                    <input type="password" name="password" value={createUserForm.password} onChange={handleInputChange(setCreateUserForm)} placeholder="Password" required />
+                    <select name="role" value={createUserForm.role} onChange={handleInputChange(setCreateUserForm)}>
+                      <option value="volunteer">Volunteer</option>
+                      <option value="ngo">NGO</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                    <button type="submit">Submit</button>
+                  </form>
                 )}
-              </li>
-            ))}
-          </ul>
+              </div>
+              
+              {/* Assign Role */}
+              <div className="action-item">
+                 <button onClick={() => {setShowAssignRoleForm(!showAssignRoleForm); setShowCreateUserForm(false); setShowResetPasswordForm(false);}} disabled={!selectedUserId}>Assign Role</button>
+                {showAssignRoleForm && selectedUserId && (
+                  <form onSubmit={handleAssignRole} className="action-form">
+                    <h3>Assign Role to {usersWithProfiles.find(u=>u._id === selectedUserId)?.email}</h3>
+                    <select name="newRole" value={assignRoleForm.newRole} onChange={handleInputChange(setAssignRoleForm)}>
+                      <option value="volunteer">Volunteer</option>
+                      <option value="ngo">NGO</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                    <button type="submit">Submit</button>
+                  </form>
+                )}
+              </div>
+
+              {/* Reset Password */}
+              <div className="action-item">
+                <button onClick={() => {setShowResetPasswordForm(!showResetPasswordForm); setShowCreateUserForm(false); setShowAssignRoleForm(false);}} disabled={!selectedUserId}>Reset Password</button>
+                {showResetPasswordForm && selectedUserId && (
+                  <form onSubmit={handleResetPassword} className="action-form">
+                     <h3>Reset Password for {usersWithProfiles.find(u=>u._id === selectedUserId)?.email}</h3>
+                    <input type="password" name="newPassword" value={resetPasswordForm.newPassword} onChange={handleInputChange(setResetPasswordForm)} placeholder="New Password" required />
+                    <button type="submit">Submit</button>
+                  </form>
+                )}
+              </div>
+
+              {/* Delete User */}
+              <div className="action-item">
+                <button onClick={handleDeleteUser} disabled={!selectedUserId}>Delete Selected User</button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="actions-section">
-          <h2>Actions</h2>
-
-          {/* Filter Dropdown */}
-          <div className="action-item">
-            <label htmlFor="filter">Filter by type: </label>
-            <select id="filter" value={filter} onChange={(e) => setFilter(e.target.value)}>
-              <option value="all">All</option>
-              <option value="volunteer">Volunteer</option>
-              <option value="ngo">NGO</option>
-            </select>
-          </div>
-
-          {/* Create User */}
-          <div className="action-item">
-            <button onClick={() => {setShowCreateUserForm(!showCreateUserForm); setShowAssignRoleForm(false); setShowResetPasswordForm(false);}}>Create User</button>
-            {showCreateUserForm && (
-              <form onSubmit={handleCreateUser} className="action-form">
-                <h3>Create New User</h3>
-                <input type="email" name="email" value={createUserForm.email} onChange={handleInputChange(setCreateUserForm)} placeholder="Email" required />
-                <input type="password" name="password" value={createUserForm.password} onChange={handleInputChange(setCreateUserForm)} placeholder="Password" required />
-                <select name="role" value={createUserForm.role} onChange={handleInputChange(setCreateUserForm)}>
-                  <option value="volunteer">Volunteer</option>
-                  <option value="ngo">NGO</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <button type="submit">Submit</button>
-              </form>
-            )}
-          </div>
-          
-          {/* Assign Role */}
-          <div className="action-item">
-             <button onClick={() => {setShowAssignRoleForm(!showAssignRoleForm); setShowCreateUserForm(false); setShowResetPasswordForm(false);}} disabled={!selectedUserId}>Assign Role</button>
-            {showAssignRoleForm && selectedUserId && (
-              <form onSubmit={handleAssignRole} className="action-form">
-                <h3>Assign Role to {usersWithProfiles.find(u=>u._id === selectedUserId)?.email}</h3>
-                <select name="newRole" value={assignRoleForm.newRole} onChange={handleInputChange(setAssignRoleForm)}>
-                  <option value="volunteer">Volunteer</option>
-                  <option value="ngo">NGO</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <button type="submit">Submit</button>
-              </form>
-            )}
-          </div>
-
-          {/* Reset Password */}
-          <div className="action-item">
-            <button onClick={() => {setShowResetPasswordForm(!showResetPasswordForm); setShowCreateUserForm(false); setShowAssignRoleForm(false);}} disabled={!selectedUserId}>Reset Password</button>
-            {showResetPasswordForm && selectedUserId && (
-              <form onSubmit={handleResetPassword} className="action-form">
-                 <h3>Reset Password for {usersWithProfiles.find(u=>u._id === selectedUserId)?.email}</h3>
-                <input type="password" name="newPassword" value={resetPasswordForm.newPassword} onChange={handleInputChange(setResetPasswordForm)} placeholder="New Password" required />
-                <button type="submit">Submit</button>
-              </form>
-            )}
-          </div>
-
-          {/* Delete User */}
-          <div className="action-item">
-            <button onClick={handleDeleteUser} disabled={!selectedUserId}>Delete Selected User</button>
-          </div>
+        
+        <div className="admin-sidebar-space">
+          {/* Future space for images */}
         </div>
       </div>
     </div>

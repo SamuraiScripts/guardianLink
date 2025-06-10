@@ -72,72 +72,87 @@ function VolunteerDashboard() {
   // Conditional rendering based on auth.refId
   if (auth && (auth.role === 'ngo' || auth.role === 'volunteer') && !auth.refId) {
     return (
-      <div className="admin-dashboard-container" style={{ padding: '20px', textAlign: 'center' }}>
-        <header>
-          <h1>Welcome, {auth.email}!</h1>
-        </header>
-        <div style={{ border: '1px solid #ffcc00', backgroundColor: '#fff9e6', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
-          <h2>Please complete your profile</h2>
-          <p>To access your dashboard and all features, you need to complete your volunteer profile.</p>
-          <button 
-            onClick={() => navigate('/profile')} 
-            style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
-          >
-            Go to Profile Page
-          </button>
+      <div className="page-container">
+        <div className="page-content">
+          <div className="main-content">
+            <header>
+              <h1>Welcome, {auth.email}!</h1>
+            </header>
+            <div style={{ border: '1px solid #ffcc00', backgroundColor: '#fff9e6', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
+              <h2>Please complete your profile</h2>
+              <p>To access your dashboard and all features, you need to complete your volunteer profile.</p>
+              <button 
+                onClick={() => navigate('/profile')} 
+                style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
+              >
+                Go to Profile Page
+              </button>
+            </div>
+          </div>
+          <div className="sidebar-space">
+            {/* Future space for images */}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-dashboard-container">
-      <header>
-        <h1>Welcome to your Volunteer Dashboard!</h1>
-      </header>
+    <div className="page-container">
+      <div className="page-content">
+        <div className="main-content">
+          <header>
+            <h1>Welcome to your Volunteer Dashboard!</h1>
+          </header>
 
-      <div className="dashboard-content">
-        <div className="user-list-section">
-          <h2>Organizations in need:</h2>
-          <div>
-            <label htmlFor="filterConcern">Filter by Areas of Concern: </label>
-            <input
-              type="text"
-              id="filterConcern"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="e.g. XSS attacks, phishing attempts, etc."
-              style={{ marginBottom: '15px', padding: '8px', width: 'calc(100% - 22px)' }}
-            />
+          <div className="dashboard-content">
+            <div className="user-list-section">
+              <h2>Organizations in need:</h2>
+              <div>
+                <label htmlFor="filterConcern">Filter by Areas of Concern: </label>
+                <input
+                  type="text"
+                  id="filterConcern"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="e.g. XSS attacks, phishing attempts, etc."
+                  style={{ marginBottom: '15px', padding: '8px', width: 'calc(100% - 22px)' }}
+                />
+              </div>
+
+              {loading && <p>Loading organizations...</p>}
+              {error && <p className="error-message">{error}</p>}
+              {!loading && !error && filteredNgos.length === 0 && <p>No organizations found matching your criteria.</p>}
+              
+              {!loading && !error && filteredNgos.length > 0 && (
+                <ul>
+                  {filteredNgos.map(ngo => (
+                    <li key={ngo._id} className="user-item">
+                      <div className="user-item-header" onClick={() => handleToggleDetails(ngo._id)}>
+                        <span>{ngo.organizationName}</span>
+                        <span>{expandedNgoId === ngo._id ? '▼' : '▶'}</span>
+                      </div>
+                      {expandedNgoId === ngo._id && (
+                        <div className="user-details">
+                          <p><strong>Areas of Concern:</strong> {(Array.isArray(ngo.areasOfConcern) ? ngo.areasOfConcern.join(', ') : ngo.areasOfConcern) || 'N/A'}</p>
+                          <button 
+                            onClick={() => handleContactNgo(ngo)} 
+                            className="contact-button"
+                          >
+                            Contact {ngo.organizationName}
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
-
-          {loading && <p>Loading organizations...</p>}
-          {error && <p className="error-message">{error}</p>}
-          {!loading && !error && filteredNgos.length === 0 && <p>No organizations found matching your criteria.</p>}
-          
-          {!loading && !error && filteredNgos.length > 0 && (
-            <ul>
-              {filteredNgos.map(ngo => (
-                <li key={ngo._id} className="user-item">
-                  <div className="user-item-header" onClick={() => handleToggleDetails(ngo._id)}>
-                    <span>{ngo.organizationName}</span>
-                    <span>{expandedNgoId === ngo._id ? '▼' : '▶'}</span>
-                  </div>
-                  {expandedNgoId === ngo._id && (
-                    <div className="user-details">
-                      <p><strong>Areas of Concern:</strong> {(Array.isArray(ngo.areasOfConcern) ? ngo.areasOfConcern.join(', ') : ngo.areasOfConcern) || 'N/A'}</p>
-                      <button 
-                        onClick={() => handleContactNgo(ngo)} 
-                        className="contact-button"
-                      >
-                        Contact {ngo.organizationName}
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+        </div>
+        
+        <div className="sidebar-space">
+          {/* Future space for images */}
         </div>
       </div>
     </div>

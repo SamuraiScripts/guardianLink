@@ -79,90 +79,105 @@ function NGODashboard() {
   // Conditional rendering based on auth.refId
   if (auth && (auth.role === 'ngo' || auth.role === 'volunteer') && !auth.refId) {
     return (
-      <div className="admin-dashboard-container" style={{ padding: '20px', textAlign: 'center' }}>
-        <header>
-          <h1>Welcome, {auth.email}!</h1>
-        </header>
-        <div style={{ border: '1px solid #ffcc00', backgroundColor: '#fff9e6', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
-          <h2>Please complete your profile</h2>
-          <p>To access your dashboard and all features, you need to complete your organization's profile.</p>
-          <button 
-            onClick={() => navigate('/profile')} 
-            style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
-          >
-            Go to Profile Page
-          </button>
+      <div className="page-container">
+        <div className="page-content">
+          <div className="main-content">
+            <header>
+              <h1>Welcome, {auth.email}!</h1>
+            </header>
+            <div style={{ border: '1px solid #ffcc00', backgroundColor: '#fff9e6', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
+              <h2>Please complete your profile</h2>
+              <p>To access your dashboard and all features, you need to complete your organization's profile.</p>
+              <button 
+                onClick={() => navigate('/profile')} 
+                style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
+              >
+                Go to Profile Page
+              </button>
+            </div>
+          </div>
+          <div className="sidebar-space">
+            {/* Future space for images */}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-dashboard-container">
-      <header>
-        <h1>Welcome to your Organization's Dashboard!</h1>
-      </header>
+    <div className="page-container">
+      <div className="page-content">
+        <div className="main-content">
+          <header>
+            <h1>Welcome to your Organization's Dashboard!</h1>
+          </header>
 
-      <div className="dashboard-content">
-        <div className="user-list-section">
-          <h2>Available Volunteers:</h2>
-          <div style={{ marginBottom: '15px' }}>
-            <div style={{ marginBottom: '10px' }}>
-              <label htmlFor="filterExpertise" style={{ marginRight: '10px' }}>Filter by Areas of Expertise: </label>
-              <input
-                type="text"
-                id="filterExpertise"
-                value={expertiseSearchTerm}
-                onChange={(e) => setExpertiseSearchTerm(e.target.value)}
-                placeholder="e.g. SQL injection, cloud security, etc."
-                style={{ padding: '8px', width: 'calc(100% - 220px)' }}
-              />
-            </div>
-            <div>
-              <label htmlFor="filterHours" style={{ marginRight: '10px' }}>Min. Hours Available/Week: </label>
-              <input
-                type="number"
-                id="filterHours"
-                value={minHoursFilter}
-                onChange={(e) => setMinHoursFilter(e.target.value)}
-                placeholder="e.g. 5"
-                style={{ padding: '8px', width: 'calc(100% - 220px)' }}
-              />
+          <div className="dashboard-content">
+            <div className="user-list-section">
+              <h2>Available Volunteers:</h2>
+              <div style={{ marginBottom: '15px' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <label htmlFor="filterExpertise" style={{ marginRight: '10px' }}>Filter by Areas of Expertise: </label>
+                  <input
+                    type="text"
+                    id="filterExpertise"
+                    value={expertiseSearchTerm}
+                    onChange={(e) => setExpertiseSearchTerm(e.target.value)}
+                    placeholder="e.g. SQL injection, cloud security, etc."
+                    style={{ padding: '8px', width: 'calc(100% - 220px)' }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="filterHours" style={{ marginRight: '10px' }}>Min. Hours Available/Week: </label>
+                  <input
+                    type="number"
+                    id="filterHours"
+                    value={minHoursFilter}
+                    onChange={(e) => setMinHoursFilter(e.target.value)}
+                    placeholder="e.g. 5"
+                    style={{ padding: '8px', width: 'calc(100% - 220px)' }}
+                  />
+                </div>
+              </div>
+
+              {loading && <p>Loading volunteers...</p>}
+              {error && <p className="error-message">{error}</p>}
+              {!loading && !error && filteredVolunteers.length === 0 && <p>No volunteers found matching your criteria.</p>}
+              
+              {!loading && !error && filteredVolunteers.length > 0 && (
+                <ul>
+                  {filteredVolunteers.map(volunteer => (
+                    <li key={volunteer._id} className="user-item">
+                      <div className="user-item-header" onClick={() => handleToggleDetails(volunteer._id)}>
+                        <span>{volunteer.fullName}</span>
+                        <span>{expandedVolunteerId === volunteer._id ? '▼' : '▶'}</span>
+                      </div>
+                      {expandedVolunteerId === volunteer._id && (
+                        <div className="user-details">
+                          <p><strong>Full Name:</strong> {volunteer.fullName}</p>
+                          <p><strong>Weekly Availability (hrs):</strong> {volunteer.weeklyAvailability}</p>
+                          <p><strong>Areas of Expertise:</strong> {(Array.isArray(volunteer.areasOfExpertise) ? volunteer.areasOfExpertise.join(', ') : volunteer.areasOfExpertise) || 'N/A'}</p>
+                          {volunteer.resumeUrl ? (
+                            <p><strong>Resume:</strong> <a href={`http://localhost:5050${volunteer.resumeUrl}`} target="_blank" rel="noopener noreferrer">View Resume</a></p>
+                          ) : <p><strong>Resume:</strong> N/A</p>}
+                          <button 
+                            onClick={() => handleContactVolunteer(volunteer)} 
+                            className="contact-button"
+                          >
+                            Contact {volunteer.fullName}
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
-
-          {loading && <p>Loading volunteers...</p>}
-          {error && <p className="error-message">{error}</p>}
-          {!loading && !error && filteredVolunteers.length === 0 && <p>No volunteers found matching your criteria.</p>}
-          
-          {!loading && !error && filteredVolunteers.length > 0 && (
-            <ul>
-              {filteredVolunteers.map(volunteer => (
-                <li key={volunteer._id} className="user-item">
-                  <div className="user-item-header" onClick={() => handleToggleDetails(volunteer._id)}>
-                    <span>{volunteer.fullName}</span>
-                    <span>{expandedVolunteerId === volunteer._id ? '▼' : '▶'}</span>
-                  </div>
-                  {expandedVolunteerId === volunteer._id && (
-                    <div className="user-details">
-                      <p><strong>Full Name:</strong> {volunteer.fullName}</p>
-                      <p><strong>Weekly Availability (hrs):</strong> {volunteer.weeklyAvailability}</p>
-                      <p><strong>Areas of Expertise:</strong> {(Array.isArray(volunteer.areasOfExpertise) ? volunteer.areasOfExpertise.join(', ') : volunteer.areasOfExpertise) || 'N/A'}</p>
-                      {volunteer.resumeUrl ? (
-                        <p><strong>Resume:</strong> <a href={`http://localhost:5050${volunteer.resumeUrl}`} target="_blank" rel="noopener noreferrer">View Resume</a></p>
-                      ) : <p><strong>Resume:</strong> N/A</p>}
-                      <button 
-                        onClick={() => handleContactVolunteer(volunteer)} 
-                        className="contact-button"
-                      >
-                        Contact {volunteer.fullName}
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+        </div>
+        
+        <div className="sidebar-space">
+          {/* Future space for images */}
         </div>
       </div>
     </div>

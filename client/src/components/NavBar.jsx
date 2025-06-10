@@ -47,43 +47,33 @@ function NavBar() {
 
   if (shouldShowNonAuthNavbar) {
     return (
-      <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
-        <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
-        <Link to="/login" style={{ marginRight: '1rem' }}>Login</Link>
-        <Link to="/register-type" style={{ marginRight: '1rem' }}>Register</Link>
+      <nav className="navbar">
+        <div className="nav-links">
+          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/login" className="nav-link">Login</Link>
+          <Link to="/register-type" className="nav-link">Register</Link>
+        </div>
       </nav>
     );
   }
 
   // Logged-in NavBar for all roles
   return (
-    <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
-      <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
-      <Link to={`/${auth.role}-dashboard`} style={{ marginRight: '1rem' }}>Dashboard</Link>
-      <Link to="/profile" style={{ marginRight: '1rem' }}>Profile</Link>
-      <Link to="/messages" style={{ marginRight: '1rem', position: 'relative' }}>
-        Messages
-        {unreadCount > 0 && (
-          <span style={{
-            position: 'absolute',
-            top: '-8px',
-            right: '-8px',
-            backgroundColor: '#e74c3c',
-            color: 'white',
-            borderRadius: '50%',
-            width: '20px',
-            height: '20px',
-            fontSize: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold'
-          }}>
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
-        )}
-      </Link>
-      <button onClick={handleLogout}>Logout</button>
+    <nav className="navbar">
+      <div className="nav-links">
+        <Link to="/" className="nav-link">Home</Link>
+        <Link to={`/${auth.role}-dashboard`} className="nav-link">Dashboard</Link>
+        <Link to="/profile" className="nav-link">Profile</Link>
+        <Link to="/messages" className="nav-link messages-link">
+          Messages
+          {unreadCount > 0 && (
+            <span className="unread-notification">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Link>
+        <button onClick={handleLogout} className="logout-button">Logout</button>
+      </div>
     </nav>
   );
 }

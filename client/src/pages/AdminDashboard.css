@@ -1,9 +1,7 @@
-.admin-dashboard-container {
-  padding: 20px;
-}
+/* Remove old admin-dashboard-container styling as we're using the global layout now */
 
 .admin-dashboard-container header h1 {
-  text-align: center;
+  text-align: left;
   margin-bottom: 20px;
 }
 
