@@ -165,140 +165,167 @@ export default function MessageCenter() {
   }
 
   return (
-    <div className="message-center">
-      <div className="message-center-header">
-        <h1>Messages</h1>
-        {unreadCount > 0 && (
-          <span className="unread-badge">{unreadCount} unread</span>
-        )}
-      </div>
-
-      <div className="message-center-content">
-        {/* Left Column - Conversations List */}
-        <div className="conversations-panel">
-          <div className="conversations-header">
-            <h2>Conversations</h2>
+    <div className="page-container">
+      <div className="page-content">
+        <div className="main-content">
+          <div className="message-center-header">
+            <h1>Messages</h1>
+            {unreadCount > 0 && (
+              <span className="unread-badge">{unreadCount} unread</span>
+            )}
           </div>
-          
-          {loading ? (
-            <div className="conversations-loading">Loading conversations...</div>
-          ) : conversations.length === 0 ? (
-            <div className="conversations-empty">
-              <p>No conversations yet.</p>
-              <p>Start a new conversation from your dashboard by selecting a user to message.</p>
-            </div>
-          ) : (
-            <div className="conversations-list">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.conversationId}
-                  className={`conversation-item ${
-                    selectedConversation?.conversationId === conversation.conversationId ? 'active' : ''
-                  }`}
-                  onClick={() => handleConversationSelect(conversation)}
-                >
-                  <div className="conversation-info">
-                    <div className="conversation-user">
-                      <span className="user-name">{conversation.user.displayName}</span>
-                      <span className="user-role">{conversation.user.role}</span>
-                    </div>
-                    <div className="conversation-preview">
-                      <p className="last-message">
-                        {conversation.lastMessage.content.length > 50
-                          ? conversation.lastMessage.content.substring(0, 50) + '...'
-                          : conversation.lastMessage.content
-                        }
-                      </p>
-                      <span className="last-message-time">
-                        {formatTimestamp(conversation.lastMessage.timestamp)}
-                      </span>
-                    </div>
-                  </div>
-                  {conversation.unreadCount > 0 && (
-                    <div className="conversation-unread">
-                      {conversation.unreadCount}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Right Column - Chat Interface */}
-        <div className="chat-panel">
-          {selectedConversation ? (
-            <>
-              <div className="chat-header">
-                <h3>{selectedConversation.user.displayName}</h3>
-                <span className="user-role-badge">{selectedConversation.user.role}</span>
+          <div className="message-center-content">
+            {/* Left Column - Conversations List */}
+            <div className="conversations-panel">
+              <div className="conversations-header">
+                <h2>Conversations</h2>
               </div>
-
-              <div className="messages-container">
-                <div className="messages-list">
-                  {messages.map((message) => (
+              
+              {loading ? (
+                <div className="conversations-loading">Loading conversations...</div>
+              ) : conversations.length === 0 ? (
+                <div className="conversations-empty">
+                  <p>No conversations yet.</p>
+                  <p>Start a new conversation from your dashboard by selecting a user to message.</p>
+                </div>
+              ) : (
+                <div className="conversations-list">
+                  {conversations.map((conversation) => (
                     <div
-                      key={message._id}
-                      className={`message ${
-                        message.sender === auth.userId ? 'sent' : 'received'
+                      key={conversation.conversationId}
+                      className={`conversation-item ${
+                        selectedConversation?.conversationId === conversation.conversationId ? 'active' : ''
                       }`}
+                      onClick={() => handleConversationSelect(conversation)}
                     >
-                      <div className="message-content">
-                        <p>{message.content}</p>
-                        <div className="message-meta">
-                          <span className="message-time">
-                            {formatTimestamp(message.timestamp)}
+                      <div className="conversation-info">
+                        <div className="conversation-user">
+                          <span className="user-name">{conversation.user.displayName}</span>
+                          <span className="user-role">{conversation.user.role}</span>
+                        </div>
+                        <div className="conversation-preview">
+                          <p className="last-message">
+                            {conversation.lastMessage.content.length > 50
+                              ? conversation.lastMessage.content.substring(0, 50) + '...'
+                              : conversation.lastMessage.content
+                            }
+                          </p>
+                          <span className="last-message-time">
+                            {formatTimestamp(conversation.lastMessage.timestamp)}
                           </span>
-                          {message.sender === auth.userId && (
-                            <span className={`message-status ${message.isRead ? 'read' : 'unread'}`}>
-                              {message.isRead ? '✓✓' : '✓'}
-                            </span>
-                          )}
                         </div>
                       </div>
+                      {conversation.unreadCount > 0 && (
+                        <div className="conversation-unread">
+                          {conversation.unreadCount}
+                        </div>
+                      )}
                     </div>
                   ))}
-                  <div ref={messagesEndRef} />
                 </div>
-              </div>
+              )}
+            </div>
 
-              <form onSubmit={handleSendMessage} className="message-input-form">
-                <div className="message-input-container">
-                  <textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="message-input"
-                    disabled={sendingMessage}
-                    rows={3}
-                  />
-                  <button
-                    type="submit"
-                    className="send-button"
-                    disabled={!newMessage.trim() || sendingMessage}
-                  >
-                    {sendingMessage ? 'Sending...' : 'Send'}
-                  </button>
+            {/* Right Column - Chat Interface */}
+            <div className="chat-panel">
+              {selectedConversation ? (
+                <>
+                  <div className="chat-header">
+                    <h3>{selectedConversation.user.displayName}</h3>
+                    <span className="user-role-badge">{selectedConversation.user.role}</span>
+                  </div>
+
+                  <div className="messages-container">
+                    <div className="messages-list">
+                      {messages.map((message) => (
+                        <div
+                          key={message._id}
+                          className={`message ${
+                            message.sender === auth.userId ? 'sent' : 'received'
+                          }`}
+                        >
+                          <div className="message-content">
+                            <p>{message.content}</p>
+                            <div className="message-meta">
+                              <span className="message-time">
+                                {formatTimestamp(message.timestamp)}
+                              </span>
+                              {message.sender === auth.userId && (
+                                <span className={`message-status ${message.isRead ? 'read' : 'unread'}`}>
+                                  {message.isRead ? '✓✓' : '✓'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSendMessage} className="message-input-form">
+                    <div className="message-input-container">
+                      <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        className="message-input"
+                        disabled={sendingMessage}
+                        rows={3}
+                      />
+                      <button
+                        type="submit"
+                        className="send-button"
+                        disabled={!newMessage.trim() || sendingMessage}
+                      >
+                        {sendingMessage ? 'Sending...' : 'Send'}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <div className="chat-placeholder">
+                  <div className="chat-placeholder-content">
+                    <h3>Select a conversation</h3>
+                    <p>Choose a conversation from the left to start messaging</p>
+                  </div>
                 </div>
-              </form>
-            </>
-          ) : (
-            <div className="chat-placeholder">
-              <div className="chat-placeholder-content">
-                <h3>Select a conversation</h3>
-                <p>Choose a conversation from the left to start messaging</p>
-              </div>
+              )}
+            </div>
+          </div>
+
+          {error && (
+            <div className="error-banner">
+              {error}
+              <button onClick={() => setError('')} className="error-close">×</button>
             </div>
           )}
         </div>
-      </div>
-
-      {error && (
-        <div className="error-banner">
-          {error}
-          <button onClick={() => setError('')} className="error-close">×</button>
+        
+        <div className="sidebar-space">
+          <img 
+            src="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+            alt="Team communication" 
+            style={{
+              width: '100%',
+              height: 'auto',
+              maxWidth: '400px',
+              borderRadius: '8px',
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+            }}
+          />
+          <p style={{ 
+            marginTop: '20px', 
+            textAlign: 'center', 
+            color: '#6c757d',
+            fontSize: '14px',
+            fontStyle: 'italic'
+          }}>
+            Stay connected with real-time messaging
+          </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }

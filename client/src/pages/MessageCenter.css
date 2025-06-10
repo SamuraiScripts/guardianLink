@@ -1,13 +1,4 @@
-.message-center {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 80px);
-  background-color: #f8f9fa;
-  max-width: 1200px;
-  margin: 0;
-  padding: 20px;
-  box-sizing: border-box;
-}
+/* MessageCenter now uses global layout, remove old container styles */
 
 .message-center-header {
   display: flex;
