@@ -1,0 +1,431 @@
+/* Registration Pages Styles */
+
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.register-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #646cff, #747bff);
+}
+
+/* Header Styles */
+.register-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.register-header h1 {
+  color: #2d3748;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.register-header p {
+  color: #718096;
+  font-size: 1.1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #646cff;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 30px;
+  padding: 8px 0;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.back-button:hover {
+  color: #4338ca;
+  transform: translateX(-2px);
+}
+
+/* Account Type Selection Styles */
+.account-type-selection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.account-type-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.account-type-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.account-type-card:hover::before {
+  left: 100%;
+}
+
+.account-type-card:hover {
+  border-color: #646cff;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(100, 108, 255, 0.15);
+}
+
+.account-type-icon {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.account-type-card h3 {
+  color: #2d3748;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.account-type-card p {
+  color: #718096;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.account-type-button {
+  background: linear-gradient(135deg, #646cff, #747bff);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.account-type-card:hover .account-type-button {
+  transform: scale(1.05);
+}
+
+/* Form Styles */
+.register-form {
+  margin-top: 30px;
+}
+
+.form-row {
+  margin-bottom: 24px;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"] {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #646cff;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.form-help {
+  display: block;
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* File Upload Styles */
+.file-upload-group {
+  position: relative;
+}
+
+.file-upload-wrapper {
+  position: relative;
+}
+
+.file-upload-wrapper input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.file-upload-display {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.file-upload-display:hover {
+  border-color: #646cff;
+  background: #f8faff;
+}
+
+.file-placeholder,
+.file-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.file-selected {
+  color: #646cff;
+  font-weight: 500;
+}
+
+/* Checkbox Styles */
+.checkbox-group {
+  margin: 20px 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.checkbox-label input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background: #646cff;
+  border-color: #646cff;
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Button Styles */
+.register-button {
+  width: 100%;
+  background: linear-gradient(135deg, #646cff, #747bff);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.register-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(100, 108, 255, 0.3);
+}
+
+.register-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* Form Footer */
+.form-footer {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.form-footer p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.form-footer .link {
+  color: #646cff;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.form-footer .link:hover {
+  color: #4338ca;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .register-container {
+    padding: 10px;
+  }
+  
+  .register-card {
+    padding: 30px 20px;
+    margin: 0;
+  }
+  
+  .register-header h1 {
+    font-size: 2rem;
+  }
+  
+  .account-type-selection {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .account-type-card {
+    padding: 25px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-card {
+    padding: 20px 15px;
+  }
+  
+  .register-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .register-header p {
+    font-size: 1rem;
+  }
+  
+  .account-type-card h3 {
+    font-size: 1.2rem;
+  }
+  
+  .account-type-card p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Form-specific styles */
+.volunteer-form,
+.ngo-form {
+  max-width: 500px;
+}
+
+.volunteer-form .register-card {
+  max-width: 500px;
+}
+
+.ngo-form .register-card {
+  max-width: 450px;
+} 
