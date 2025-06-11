@@ -47,7 +47,7 @@ router.post('/', async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: savedUser._id, role: savedUser.role, refId: savedUser.refId },
+      { userId: savedUser._id, role: savedUser.role, refId: savedUser.refId, email: savedUser.email },
       JWT_SECRET,
       { expiresIn: '2h' }
     );
@@ -109,7 +109,15 @@ router.get('/me', requireAuth, requireRole('ngo'), async (req, res) => {
   try {
     const ngo = await NGO.findById(req.user.refId);
     if (!ngo) return res.status(404).json({ error: 'NGO profile not found' });
-    res.json(ngo);
+    
+    // Include email from associated User record
+    const user = await User.findById(req.user.userId).select('email');
+    const ngoWithEmail = {
+      ...ngo.toObject(),
+      email: user ? user.email : null
+    };
+    
+    res.json(ngoWithEmail);
   } catch (err) {
     console.error('Error fetching NGO profile:', err);
     res.status(500).json({ error: 'Server error fetching NGO profile' });
