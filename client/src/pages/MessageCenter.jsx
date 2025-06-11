@@ -309,8 +309,8 @@ export default function MessageCenter() {
             alt="Team communication" 
             style={{
               width: '100%',
-              height: 'auto',
-              maxWidth: '400px',
+              height: '50%',
+              maxWidth: '500px',
               borderRadius: '8px',
               boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
             }}
@@ -329,4 +329,3 @@ export default function MessageCenter() {
     </div>
   );
 }
-

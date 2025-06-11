@@ -28,6 +28,17 @@ function HomePage() {
               should have access to the advice and best practices that will help keep themselves and their clients safe.
             </p>
           </section>
+
+          <section className="home-section" style={{ textAlign: 'center', marginTop: '40px' }}>
+            <h2 style={{ 
+              fontWeight: 'bold',
+              color: '#2c3e50',
+              fontSize: '2rem',
+              marginBottom: '20px'
+            }}>
+              Join our community today!
+            </h2>
+          </section>
         </div>
         
         <div className="sidebar-space">
@@ -36,8 +47,8 @@ function HomePage() {
             alt="Cybersecurity illustration" 
             style={{
               width: '100%',
-              height: 'auto',
-              maxWidth: '400px',
+              height: '50%',
+              maxWidth: '500px',
               borderRadius: '8px',
               boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
             }}

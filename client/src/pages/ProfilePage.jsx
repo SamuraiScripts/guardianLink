@@ -795,14 +795,14 @@ function ProfilePage() {
         
         <div className="sidebar-space">
           <img 
-            src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+            src="/images/circuitboard.avif" 
             alt="Professional profile" 
             style={{
               width: '100%',
-              height: 'auto',
-              maxWidth: '400px',
-              borderRadius: '8px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '12px',
+              display: 'block'
             }}
           />
         </div>
