@@ -247,6 +247,10 @@
   word-wrap: break-word;
 }
 
+.message.sent .message-content p {
+  color: white;
+}
+
 .message-meta {
   display: flex;
   justify-content: space-between;

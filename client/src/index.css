@@ -75,7 +75,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   width: 100vw;
   margin: 0;
   padding: 0;

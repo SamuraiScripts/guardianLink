@@ -95,8 +95,10 @@ export default function NewConversation() {
   }
 
   return (
-    <div className="new-conversation">
-      <div className="new-conversation-container">
+    <div className="page-container">
+      <div className="page-content">
+        <div className="main-content">
+          <div className="new-conversation-container">
         <div className="new-conversation-header">
           <h1>New Message</h1>
           {recipientInfo && (
@@ -146,6 +148,12 @@ export default function NewConversation() {
             </button>
           </div>
         </form>
+          </div>
+        </div>
+        
+        <div className="sidebar-space">
+          {/* Empty sidebar for consistency */}
+        </div>
       </div>
     </div>
   );

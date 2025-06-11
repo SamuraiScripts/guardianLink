@@ -86,8 +86,29 @@ function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
-      <h2>Login</h2>
+    <div className="page-container">
+      <div style={{ 
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        padding: '20px'
+      }}>
+        <div style={{ 
+          maxWidth: '400px', 
+          width: '100%',
+          background: 'white',
+          borderRadius: '20px',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          padding: '40px'
+        }}>
+          <h2 style={{ 
+            textAlign: 'center',
+            color: '#2d3748',
+            fontSize: '2rem',
+            fontWeight: '700',
+            marginBottom: '30px'
+          }}>Login</h2>
       <form onSubmit={handleLogin}>
         <input
           type="email"
@@ -201,6 +222,8 @@ function LoginPage() {
             )}
           </div>
         )}
+      </div>
+        </div>
       </div>
     </div>
   );
