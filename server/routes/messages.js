@@ -39,6 +39,19 @@ router.get('/inbox', requireAuth, async (req, res) => {
     const mongoose = require('mongoose');
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
+    // Clean up orphaned messages from deleted users
+    const orphanedMessages = await Message.find({
+      $or: [{ sender: userObjectId }, { recipient: userObjectId }]
+    }).populate('sender recipient', '_id');
+    
+    const messagesToCleanup = orphanedMessages.filter(msg => !msg.sender || !msg.recipient);
+    
+    if (messagesToCleanup.length > 0) {
+      const orphanedIds = messagesToCleanup.map(msg => msg._id);
+      await Message.deleteMany({ _id: { $in: orphanedIds } });
+      console.log(`Cleaned up ${orphanedIds.length} orphaned messages from deleted users in inbox`);
+    }
+
     // Get all messages for this user
     const allUserMessages = await Message.find({
       $or: [{ sender: userObjectId }, { recipient: userObjectId }]
@@ -81,7 +94,6 @@ router.get('/inbox', requireAuth, async (req, res) => {
       
       const user = await User.findById(otherUserId).select('email role refId');
       if (!user) {
-        console.warn(`User not found for ID: ${otherUserId}`);
         return null;
       }
       
@@ -153,6 +165,22 @@ router.get('/unread-count', requireAuth, async (req, res) => {
   try {
     const userId = req.user.userId;
     
+    // First, clean up any orphaned messages from deleted users
+    const orphanedMessages = await Message.find({
+      recipient: userId,
+      isRead: false
+    }).populate('sender', '_id');
+    
+    // Filter out messages where sender lookup failed (deleted users)
+    const messagesToCleanup = orphanedMessages.filter(msg => !msg.sender);
+    
+    if (messagesToCleanup.length > 0) {
+      const orphanedIds = messagesToCleanup.map(msg => msg._id);
+      await Message.deleteMany({ _id: { $in: orphanedIds } });
+      console.log(`Cleaned up ${orphanedIds.length} orphaned messages from deleted users`);
+    }
+    
+    // Now get the accurate unread count
     const unreadCount = await Message.countDocuments({
       recipient: userId,
       isRead: false
@@ -266,6 +294,39 @@ router.get('/user-id/:profileId', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Error finding user for profile:', err);
     res.status(500).json({ error: 'Failed to find user' });
+  }
+});
+
+// POST /messages/cleanup-orphaned — Clean up messages from deleted users
+router.post('/cleanup-orphaned', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Find all messages where the sender or recipient no longer exists
+    const allMessages = await Message.find({
+      $or: [{ sender: userId }, { recipient: userId }]
+    }).populate('sender recipient', '_id');
+    
+    const orphanedMessages = allMessages.filter(msg => !msg.sender || !msg.recipient);
+    
+    if (orphanedMessages.length > 0) {
+      const orphanedIds = orphanedMessages.map(msg => msg._id);
+      await Message.deleteMany({ _id: { $in: orphanedIds } });
+      
+      res.json({ 
+        message: 'Orphaned messages cleaned up successfully', 
+        deletedCount: orphanedIds.length,
+        deletedMessageIds: orphanedIds
+      });
+    } else {
+      res.json({ 
+        message: 'No orphaned messages found', 
+        deletedCount: 0 
+      });
+    }
+  } catch (err) {
+    console.error('Error cleaning up orphaned messages:', err);
+    res.status(500).json({ error: 'Failed to cleanup orphaned messages' });
   }
 });
 
