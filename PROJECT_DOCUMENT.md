@@ -1,12 +1,13 @@
-# Final Project Documentation
+# Project Documentation
 
 ## a. Overview / Summary
-Brief synopsis of the project, its purpose, and goals.
+GuardianLink is an online platform that helps connect cybersecurity volunteers with organizations that need cybersecurity assistance.
+The goal of GuardianLink is to promote a more secure online ecosystem, by encouraging good cybersecurity practices through our volunteers' expert advice.
 
 ## b. Wireframe Diagram and Planning Docs
 
 ### i. Wireframe Diagram
-![Wireframe](path/to/wireframe.png)
+/wireframe.png
 
 ### ii. Project Plan
 
@@ -36,7 +37,7 @@ Forgot Password | Email-based reset
 
 Access Control Logic | Role-based routing, protected views
 
-About Page | purpose and partnerships
+Home Page | purpose and partnerships
 
 #### 2. Subtasks for Each Component
 User Authentication
@@ -102,116 +103,125 @@ Access Control
 #### 3. Acceptance Criteria (Per Component)
 User Authentication
 
-[] Users can register with appropriate roles (Volunteer, NGO. Admin accounts created manually)
+[x] Users can register with appropriate roles (Volunteer, NGO. Admin accounts created manually)
 
-[] Passwords are hashed and stored securely
+[x] Passwords are hashed and stored securely
 
-[] Users can log in and log out successfully
+[x] Users can log in and log out successfully
 
-[] Users can reset their password via email link
+[x] Users can reset their password via admin
 
-[] Users are redirected to the correct dashboard based on their role
+[x] Users are redirected to the correct dashboard based on their role
 
 Navigation Bar
 
-[] Navigation displays Dashboard, Profile, Messages, Logout for logged-in users
+[x] Navigation displays Home, Dashboard, Profile, Messages, Logout for logged-in users
 
-[] Navigation displays Login/Register for unauthenticated users
+[x] Navigation displays Home, Login, Register for unauthenticated users
 
-[] Navigation updates dynamically based on user role
+[x] Navigation updates dynamically based on user role
 
 Registration Forms
 
-[] Volunteer registration includes hours, resume upload, background check trigger
+[x] Volunteer registration includes hours, resume upload, background check trigger
 
-[] NGO registration includes organization name, email, and areas of concern
+[x] NGO registration includes organization name, email, and areas of concern
 
-[] All form inputs are validated and stored correctly in the database
+[x] All form inputs are validated and stored correctly in the database
 
 Profile Pages
 
-[] Users can view and edit their own profile (name, email, etc.)
+[x] Users can view and edit their own profile
 
-[] Admin profile displays name/email and role (non-editable)
+[x] Admin profile displays name/email and role (non-editable)
 
-[] NGOs can view Volunteer profiles in read-only format
+[x] NGOs can view only Volunteer profiles
 
-[] Volunteers can view NGO profiles in read-only format
+[x] Volunteers can view only NGO profiles
 
 Dashboards
 
-[] Volunteers see a dashboard of NGOs needing help, with filters
+[x] Volunteers see a dashboard of NGOs needing help, with filters
 
-[] NGOs see a dashboard of available Volunteers, with filters
+[x] NGOs see a dashboard of available Volunteers, with filters
 
 Admin Dashboard
 
-[] Admin sees a user management dashboard with search/filter tools
+[x] Admin sees a user management dashboard with search/filter tools
 
-[] Admin can see a list of all users
+[x] Admin can see a list of all users
 
-[] Admin can delete/add users and assign/revoke Admin roles
+[x] Admin can delete/add users and assign/revoke Admin roles
 
-[] Admin can reset user passwords
+[x] Admin can reset user passwords
 
 Communication
 
-[] NGOs can contact Volunteers via the "Contact" button on profile pages
+[x] NGOs can contact Volunteers via the "Contact" button on profile pages
 
-[] Volunteers can contact NGOs via the "Contact" button on profile pages
+[x] Volunteers can contact NGOs via the "Contact" button on profile pages
 
-[] Clicking Contact opens the Message Center with a preloaded conversation
+[x] Clicking Contact opens the Message Center with a preloaded conversation
 
-[] Message Center includes an inbox list and live conversation window
+[x] Message Center includes an inbox list and live conversation window
 
 Access Control
 
-[] Volunteers and NGOs cannot access Admin features
+[x] Volunteers and NGOs cannot access Admin features
 
-[] Users cannot view other users’ profiles unless allowed by their role (Volunteers can only see NGO profiles and vice versa)
+[x] Users cannot view other users’ profiles unless allowed by their role (Volunteers can only see NGO profiles and vice versa)
 
-[] Route protection prevents access to unauthorized pages
+[x] Route protection prevents access to unauthorized pages
 
 #### 4. Acceptance Criteria (Whole Project)
-[] Users can register, log in, and reset their passwords securely
+[x] Users can register, log in, and reset their passwords securely
 
-[] Users are redirected to the correct dashboard based on role
+[x] Users are redirected to the correct dashboard based on role
 
-[] Role-based access is enforced throughout the application
+[x] Role-based access is enforced throughout the application
 
-[] NGOs can view and contact available volunteers
+[x] NGOs can view and contact available volunteers
 
-[] Volunteers can view and contact NGOs seeking help
+[x] Volunteers can view and contact NGOs seeking help
 
-[] Admin can manage users, roles, and account security
+[x] Admin can manage users, roles, and account security
 
-[] The communication system is functional and intuitive
+[x] The communication system is functional and intuitive
 
-[] All forms validate and store the required information
+[x] All forms validate and store the required information
 
-[] Users can edit their own profiles as expected
+[x] Users can edit their own profiles as expected
 
-[] All pages are navigable and visually coherent
+[x] All pages are navigable and visually coherent
 
-[] The wireframe functionality is faithfully implemented in the UI
+[x] The wireframe functionality is faithfully implemented in the UI
 
-[] The application is ready for user testing and potential deployment
+[x] The application is ready for user testing and potential deployment
 
 ## c. Technology Stack and Rationale
-- Frontend: React – I did some research and discovered React is very commonly used in today's websites. I wanted modern.
+- Frontend: React – I did some research and discovered React is very commonly used in today's websites. I wanted something modern and transferable.
 - Backend: Node.js – I chose to work in JavaScript, front and backend.
 - Database: MongoDB – Again, I wanted to use modern and commonly used services.
 
 ## d. Testing Methods
-- Black Box: ...
-- Unit Testing: ...
-(Include which components were tested and how)
+All my testing was done manually through Postman to interact with my database. After I set up the frontend to a sufficient degree, I interacted with the frontend.
+All testing was done manually by myself, anytime after implementing a working verison of a feature I tested it.
 
 ## e. Challenges Faced
-- Example: Integrating Auth0 with backend...
+- Because I have two types of users in my system, I decided to separate every user's data into role specific profile data and authentication data.
+I chose this for readability/organization and performance reasons.
+This means every user has their data separated into two database models, and I use a User.refId field to associate the User with the Volunteer/NGO models.
+Getting the system to consistently match the User.refId with the associated Volunteer/NGO account was a trouble point throughout until I did some deep debugging and finally solved the issues.
+- Had to learn the hard way to make more consistent version commits.
 
 ## f. Lessons Learned
-- What you discovered during dev...
+- Switching the submission type for the registration and editing routes in volunteers.js from a raw json to form-data,
+was necessary because of the need to upload a resume.
+- Work flow, best practice is to first focus on your back end routes being flexible and solid,
+and all the details of front end work can then be considered later.
+- Instead of using just a concatenated string of two user IDs to flag message conversations,
+I used a hashing algorithm to convert that string into a fixed character-length hashed string to promote uniform distribution and performance.
 
 ## g. Future Recommendations
-- What you’d do differently next time...
+- Need to make frequent version commits to Github to avoid losing hours of work to mistakes.
+- Take longer to really understand and flesh out the multiple user model system, if being used. That way, troubles with resolving users to profiles will be less frequent.
