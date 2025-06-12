@@ -150,10 +150,6 @@ export default function NewConversation() {
         </form>
           </div>
         </div>
-        
-        <div className="sidebar-space">
-          {/* Empty sidebar for consistency */}
-        </div>
       </div>
     </div>
   );

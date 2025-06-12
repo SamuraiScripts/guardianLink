@@ -114,6 +114,7 @@ function RegisterNgoPage() {
                 placeholder="e.g., SQL injection, Phishing attempts, etc. (comma-separated)"
                 value={areasOfConcern}
                 onChange={e => setAreasOfConcern(e.target.value)}
+                required
               />
               <small className="form-help">Separate multiple areas with commas</small>
             </div>

@@ -17,8 +17,8 @@ router.post('/', async (req, res) => {
     areasOfConcern
   } = req.body;
 
-  if (!organizationName || !email || !password) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (!organizationName || !email || !password || !areasOfConcern || (Array.isArray(areasOfConcern) && areasOfConcern.length === 0)) {
+    return res.status(400).json({ error: 'Missing required fields: organization name, email, password, and areas of concern are all required' });
   }
 
   try {
