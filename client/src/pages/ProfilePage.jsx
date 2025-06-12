@@ -1,9 +1,11 @@
 import { useContext, useEffect, useState, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function ProfilePage() {
   const { auth, setAuth } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
@@ -172,6 +174,36 @@ function ProfilePage() {
       if (err.response?.data?.details) {
         setError(JSON.stringify(err.response.data.details));
       }
+    }
+  };
+
+  // Handle account deletion
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data.')) {
+      return;
+    }
+
+    let endpoint = '';
+    if (auth.role === 'ngo') {
+      endpoint = 'http://localhost:5050/ngos/me';
+    } else if (auth.role === 'volunteer') {
+      endpoint = 'http://localhost:5050/volunteers/me';
+    } else {
+      setMessage('Account deletion not available for your role.');
+      return;
+    }
+
+    try {
+      await axios.delete(endpoint, {
+        headers: { Authorization: `Bearer ${auth.token}` }
+      });
+      
+      // Clear auth context and redirect to home page
+      setAuth(null);
+      navigate('/');
+    } catch (err) {
+      console.error('Error deleting account:', err);
+      setMessage('Failed to delete account. ' + (err.response?.data?.error || err.message));
     }
   };
 
@@ -789,6 +821,27 @@ function ProfilePage() {
                   Cancel
                 </button>
               </>
+            )}
+            {auth.role !== 'admin' && profile && (
+              <button 
+                onClick={handleDeleteAccount} 
+                style={{ 
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
+              >
+                Delete Account
+              </button>
             )}
           </div>
         </div>
